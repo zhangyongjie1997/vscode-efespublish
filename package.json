@@ -1,0 +1,82 @@
+{
+	"name": "vscode-efespublish",
+	"displayName": "vscode-efespublish",
+	"description": "A pro version for efesjs's publish command",
+	"version": "0.0.1",
+	"publisher": "zyj",
+	"engines": {
+		"vscode": "^1.50.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"*"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "efespublish.transformjs",
+				"title": "efes-publish: transformjs"
+			},
+			{
+				"command": "efespublish.publish",
+				"title": "efes-publish: publish"
+			}
+		],
+		"configuration": {
+			"title": "autotransformjs",
+			"properties": {
+				"autotransformjs.include": {
+					"type": "array",
+					"default": [],
+					"description": "Paths your want to transform."
+				}
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile && npm run lint",
+		"lint": "eslint src --ext ts",
+		"test": "node ./out/test/runTest.js"
+	},
+	"dependencies": {
+		"@babel/preset-env": "^7.12.1",
+		"@types/async": "^3.2.5",
+		"@types/babel__core": "^7.1.12",
+		"@types/babel__preset-env": "^7.9.1",
+		"@types/clean-css": "^4.2.2",
+		"@types/html-minifier": "^4.0.0",
+		"@types/less": "^3.0.2",
+		"@types/request": "^2.48.5",
+		"aigle": "^1.14.1",
+		"autoprefixer": "^10.0.4",
+		"clean-css": "^4.2.3",
+		"gulp": "^4.0.2",
+		"html-minifier": "^4.0.0",
+		"less": "^3.12.2",
+		"postcss": "^8.1.14",
+		"postcss-less": "^4.0.0",
+		"precss": "^4.0.0",
+		"request": "^2.88.2",
+		"terser": "^5.5.1"
+	},
+	"devDependencies": {
+		"@babel/core": "^7.12.3",
+		"@types/glob": "^7.1.3",
+		"@types/mocha": "^8.0.0",
+		"@types/node": "^12.19.8",
+		"@types/vscode": "^1.50.0",
+		"@typescript-eslint/eslint-plugin": "^4.1.1",
+		"@typescript-eslint/parser": "^4.1.1",
+		"eslint": "^7.9.0",
+		"glob": "^7.1.6",
+		"mocha": "^8.1.3",
+		"typescript": "^4.0.5",
+		"vscode-test": "^1.4.0"
+	}
+}
