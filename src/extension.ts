@@ -5,8 +5,6 @@ import { tranformer } from "./module/transform";
 import { publisher } from "./module/publish";
 
 
-console.log("111");
-
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export const activate = (context: vscode.ExtensionContext) => {

@@ -5,7 +5,7 @@ import Aigle from "aigle";
 import { concatFile, miniHtmlFile } from "../utils/concatFile";
 import findConfigFile from "../utils/findConfigFile";
 import { mkdir, findHtmlFiles, writeFile, findImageFiles } from "../utils/fsUtils";
-import { warning, error } from "../utils/utils";
+import { warning, error, info } from "../utils/utils";
 import { imageMinify } from "../utils/imageMinify";
 
 const window = vscode.window;
@@ -56,7 +56,6 @@ const handleProgress = async (progress: vscode.Progress<ProgressMessage>, cancel
     incrementProgress(progress, 0, "发现配置文件，开始打包。。。");
 
     const pkg = config.pkg;
-    console.log(totalFileLength);
     totalFileLength += Object.keys(pkg).length;
     const iterator = Aigle.resolve(pkg).forEachSeries((inputs, output) => {
       return new Promise(async resolve => {
@@ -97,15 +96,20 @@ const handleHtmlFiles = (progress: vscode.Progress<ProgressMessage>) => {
     incrementProgress(progress, (1/totalFileLength) * 100, `发布${fileName}`);
     return;
   });
-  iterator.then(() => {
+  iterator.then(async () => {
     incrementProgress(progress, 0, `开始压缩图片`);
-    handleImageFiles(progress);
+    await handleImageFiles(progress);
+    incrementProgress(progress, 100, "");
+    info("publish done!");
   });
 };
 
-const handleImageFiles = (progress: vscode.Progress<ProgressMessage>) => {
+const handleImageFiles = async (progress: vscode.Progress<ProgressMessage>) => {
   const imageFileSrcs = findImageFiles(path.join(workDir, "/src/images"));
-  imageMinify(imageFileSrcs);
+  const outputPath = path.join(workDir, "/images");
+  console.log(JSON.stringify(imageFileSrcs));
+  await mkdir(outputPath);  // 检查发布目录是否存在
+  await imageMinify(imageFileSrcs, outputPath);
 };
 
 
@@ -117,5 +121,6 @@ const incrementProgress = (process: vscode.Progress<ProgressMessage>, step: numb
 };
 
 const handleCancel = () => {
+  publishing = false;
   warning("publish canceled!");
 };

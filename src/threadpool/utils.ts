@@ -30,9 +30,3 @@ export const splice = <T = any>(arr: T[], index: number): T | undefined | null =
   arr[index] = arr[maxIndex];
   return arr.pop();
 };
-
-// export const importModule = (modulePath: string) => {
-//   const Module = module.constructor;
-//   const code = fs.readFileSync(modulePath, {encoding: "utf8"});
-  
-// };

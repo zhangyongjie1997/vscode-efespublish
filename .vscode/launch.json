@@ -6,11 +6,26 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+			"name": "Launch Program",
+			"program": "${workspaceFolder}/out/utils/imageMinify.js",
+			"request": "launch",
+			"runtimeArgs": [
+				"--experimental-wasm-threads",
+				"--experimental-worker"
+			],
+			"skipFiles": [
+				"<node_internals>/**"
+			],
+			"type": "node"
+		},
+		
+		{
 			"name": "Run Extension",
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}"
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"--inspect"
 			],
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js"

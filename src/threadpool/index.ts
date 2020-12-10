@@ -21,7 +21,7 @@ const cores = os.cpus().length;
 // 线程池和业务的通信
 
 // 业务提交一个任务给线程池的时候，线程池会返回一个UserWork类，业务侧通过UserWork类和线程池通信。
-class UserWork extends NodeJS.EventEmitter {
+class UserWork extends EventEmitter {
 
   private timer: NodeJS.Timeout | null = null;
   public workId: WorkId;
@@ -237,13 +237,13 @@ class ThreadPool {
       switch(event) {
         case EVENT_TYPES.DONE:
             // 通知用户，任务完成
-            userWork.emit('done', data);
+            userWork.emit("done", data);
             break;
         case EVENT_TYPES.ERROR:
             // 通知用户，任务出错
             try {
               if (EventEmitter.listenerCount(userWork, 'error')) {  //如果存在error事件的监听者
-                userWork.emit('error', error);
+                userWork.emit("error", error);
               }
             } catch (error) {}
             break;

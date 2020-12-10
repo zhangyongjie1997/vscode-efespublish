@@ -14,7 +14,7 @@ parentPort?.on("message", async (work: Work) => {
     const {fileName, options} = work;
     let aFunction: any;
     if(isJSFile(fileName)){  // fileName可以是一段js代码或者js脚本的文件名
-      aFunction = require(fileName);
+      aFunction = await import(fileName);
     } else {
       aFunction = vm.runInThisContext(`(${fileName})`);
     }
@@ -22,7 +22,7 @@ parentPort?.on("message", async (work: Work) => {
       throw new TypeError(`work type error: expect js file or string, got ${typeof aFunction}`);
     }
     work.data = await aFunction(options);
-    parentPort?.postMessage({event: EVENT_TYPES.DONE});
+    parentPort?.postMessage({event: EVENT_TYPES.DONE, work});
   }catch(error){
     work.error = error.toString();
     parentPort?.postMessage({event: EVENT_TYPES.ERROR, work});

@@ -27,13 +27,13 @@ export const findImageFiles = (sourcePath: string): string[] => {
   const imageFilePaths: string[] = [];
   dir.forEach(item => {
     if(rImageFile.test(item)){
-      imageFilePaths.push(item);
+      imageFilePaths.push(path.resolve(sourcePath, item));
     }
   });
   return imageFilePaths;
 };
 
-export const writeFile = (path: string, data: string) => {
+export const writeFile = (path: string, data: any): Promise<void> => {
   return new Promise(resolve => {
     const writestream = fs.createWriteStream(path);
     writestream.write(data, () => {

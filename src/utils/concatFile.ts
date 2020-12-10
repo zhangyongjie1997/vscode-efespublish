@@ -129,7 +129,7 @@ export const concatFile = (options: ConcatOptions): Promise<string> => {
   });
 };
 
-export const miniHtmlFile = (htmlFileSrc: string): Promise<string> => {
+export const miniHtmlFile = (htmlFileSrc: string): Promise<any> => {
   const miniHtmlConfig = {
     removeComments: true,
     collapseWhitespace: true,
