@@ -5,19 +5,36 @@ const path = require("path");
 
 module.exports = function(options) {
   const src = options.src;
-  return new Promise(resolve => {
-    fs.readFile(src, async (err, data) => {
-      if(err){
-        resolve(null);
-      }else{
-        const res = await tinypng(data, src);
-        resolve(res);
+  return new Promise(async resolve => {
+
+ 
+    const data = fs.readFileSync(src);
+
+    if(!data){
+      resolve("");
+    }else{
+      if(src.indexOf("share_wx") > -1) {
+        console.log("share_wx开始tinypng");
+        debugger;
       }
-    });
+      const res = await tinypng(data, src);
+
+      resolve(res);
+    }
+    // fs.readFile(src, async (err, data) => {
+    //     debugger;
+    //   if(err){
+    //     resolve(null);
+    //   }else{
+    //     const res = await tinypng(data, src);
+    //     resolve(res);
+    //   }
+    // });
   });
 };
 
 function tinypng(file: any, src): Promise<any> {
+  console.log(file);
   return new Promise(resolve => {
     request({
       url: 'https://tinypng.com/web/shrink',

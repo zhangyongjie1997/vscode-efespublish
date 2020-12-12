@@ -21,7 +21,9 @@ parentPort?.on("message", async (work: Work) => {
     if(!isFunction(aFunction)){
       throw new TypeError(`work type error: expect js file or string, got ${typeof aFunction}`);
     }
+    console.log(`work[${work.workId}] start`);
     work.data = await aFunction(options);
+    console.log(`work[${work.workId}] done`);
     parentPort?.postMessage({event: EVENT_TYPES.DONE, work});
   }catch(error){
     work.error = error.toString();

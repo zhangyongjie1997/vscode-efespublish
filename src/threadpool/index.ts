@@ -228,25 +228,28 @@ class ThreadPool {
 
       // 还有任务则通知子线程处理，否则修改子线程状态为空闲
       if (this.workQueue.length) {
+        console.log("还有任务要处理");
+        const work = this.workQueue.shift();
         // 从任务队列拿到一个任务交给子线程
-        // this.submitWorkToThread(thread, this.workQueue.shift());
+        work && this.submitWorkToThread(thread, userWork, work);
       } else {
-          thread.setState(THREAD_STATE.IDLE);
+        thread.setState(THREAD_STATE.IDLE);
       }
 
       switch(event) {
         case EVENT_TYPES.DONE:
-            // 通知用户，任务完成
-            userWork.emit("done", data);
-            break;
+          console.info(`userWork[${userWork.workId}] 完成任务`);
+          // 通知用户，任务完成
+          userWork.emit("done", data);
+          break;
         case EVENT_TYPES.ERROR:
-            // 通知用户，任务出错
-            try {
-              if (EventEmitter.listenerCount(userWork, 'error')) {  //如果存在error事件的监听者
-                userWork.emit("error", error);
-              }
-            } catch (error) {}
-            break;
+          // 通知用户，任务出错
+          try {
+            if (EventEmitter.listenerCount(userWork, 'error')) {  //如果存在error事件的监听者
+              userWork.emit("error", error);
+            }
+          } catch (error) {}
+          break;
         default: break;
       }
     });
@@ -286,10 +289,13 @@ class ThreadPool {
         thread = this.selectThead();
         // 如果当前线程忙碌
         if(thread.state === THREAD_STATE.BUSY){
+          // console.log("选择的线程忙碌");
           // 子线程数量没有超过默认核心线程数，就继续创建
           if(this.threadQueue.length < this.coreThreads){
+            // console.log("子线程数量没有超过默认核心线程数，就继续创建");
             thread = this.newThread();
           } else if(this.totalWork + 1 > this.maxWork){
+            // console.log("总任务数已达到阈值，还没有达到线程数阈值，则创建");
             // 总任务数已达到阈值，还没有达到线程数阈值，则创建
             if(this.threadQueue.length < this.maxThreads){
               thread = this.newThread();
@@ -351,6 +357,7 @@ class ThreadPool {
               }
             }
           }
+          // console.log("这里干了蛇么");
         }
       } else {
         thread = this.newThread();
@@ -388,6 +395,7 @@ class ThreadPool {
    * @param work 任务
    */
   submitWorkToThread(thread: Thread, userWork: UserWork, work: Work): void {
+    console.log(`提交任务[${work.workId}]给线程`);
     userWork.setState(WORK_STATE.RUNNING);
     thread.setState(THREAD_STATE.BUSY);
     thread.worker.postMessage(work);
@@ -435,10 +443,16 @@ class ThreadPool {
    */
   pollIdle() {
     setTimeout(() => {
-      for(var i = 0; i < this.threadQueue.length; i++) {
+      // console.log(`当前线程数量${this.threadQueue.length}`);
+      let i = 0;
+      while (i < this.threadQueue.length){
         const thread = this.threadQueue[i];
         if(thread.state === THREAD_STATE.IDLE && ((Date.now() - thread.lastWorkTime) > this.maxIdleTime)){
+          // console.log(`杀死空闲线程`);
           thread.worker.terminate();
+          splice(this.threadQueue, i);
+        }else{
+          i++;
         }
       }
       this.pollIdle();
@@ -494,17 +508,17 @@ class FixedThreadPool extends ThreadPool {
   }
 }
 
-const defaultThreadPool = new ThreadPool();
+// const defaultThreadPool = new ThreadPool();
 const defaultCpuThreadPool = new CPUThreadPool();
-const defaultFixedThreadPool = new FixedThreadPool();
-const defaultSingleThreadPool = new SingleThreadPool();
+// const defaultFixedThreadPool = new FixedThreadPool();
+// const defaultSingleThreadPool = new SingleThreadPool();
 export {
   ThreadPool,
   CPUThreadPool,
   FixedThreadPool,
   SingleThreadPool,
-  defaultThreadPool, 
+  // defaultThreadPool, 
   defaultCpuThreadPool,
-  defaultFixedThreadPool,
-  defaultSingleThreadPool,
+  // defaultFixedThreadPool,
+  // defaultSingleThreadPool,
 };

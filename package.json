@@ -2,7 +2,7 @@
 	"name": "vscode-efespublish",
 	"displayName": "vscode-efespublish",
 	"description": "A pro version for efesjs's publish command",
-	"version": "0.0.3",
+	"version": "0.0.12",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/zhangyongjie1997/vscode-efespublish.git"
@@ -41,7 +41,7 @@
 		}
 	},
 	"scripts": {
-		"attach": "node ./out/utils/imageMinify.js --inspect",
+		"attach": "node ./out/utils/imageMinify.js",
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",

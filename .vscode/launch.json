@@ -6,9 +6,10 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Launch Program",
-			"program": "${workspaceFolder}/out/utils/imageMinify.js",
+			"name": "workertest",
+			"program": "${workspaceFolder}/test/workertest.js",
 			"request": "launch",
+			"autoAttachChildProcesses": true,
 			"runtimeArgs": [
 				"--experimental-wasm-threads",
 				"--experimental-worker"
@@ -18,18 +19,17 @@
 			],
 			"type": "node"
 		},
-		
 		{
 			"name": "Run Extension",
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
 				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--inspect"
 			],
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js"
 			],
+			"autoAttachChildProcesses": true,
 			"preLaunchTask": "${defaultBuildTask}"
 		},
 		{

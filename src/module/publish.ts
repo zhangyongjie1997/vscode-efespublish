@@ -50,7 +50,7 @@ const handleProgress = async (progress: vscode.Progress<ProgressMessage>, cancel
     if(!config?.pkg){
       error("请检查配置文件是否正确！");
       publishing = false;
-      return resolve();
+      return resolve(null);
     }
 
     incrementProgress(progress, 0, "发现配置文件，开始打包。。。");
@@ -72,7 +72,7 @@ const handleProgress = async (progress: vscode.Progress<ProgressMessage>, cancel
         await writeFile(outputPath, data);
 
         incrementProgress(progress, (1/totalFileLength) * 100, `发布${path.basename(output)}`);
-        resolve();
+        resolve(null);
 
         // const buf = Buffer.from(data);
         // fs.writeFile(outputPath, buf, { encoding: "utf8" }, () => {
@@ -106,10 +106,11 @@ const handleHtmlFiles = (progress: vscode.Progress<ProgressMessage>) => {
 
 const handleImageFiles = async (progress: vscode.Progress<ProgressMessage>) => {
   const imageFileSrcs = findImageFiles(path.join(workDir, "/src/images"));
-  const outputPath = path.join(workDir, "/images");
-  console.log(JSON.stringify(imageFileSrcs));
-  await mkdir(outputPath);  // 检查发布目录是否存在
+  const outputPath = path.join(workDir, "/images/");
+  await mkdir(path.join(outputPath, "/temp.js"));  // 检查发布目录是否存在
   await imageMinify(imageFileSrcs, outputPath);
+  console.log("handleImageFiles done!!!!!!!!!!1");
+  return 0;
 };
 
 

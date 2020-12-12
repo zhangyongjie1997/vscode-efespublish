@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="b444284b-5e22-4b4e-b701-bc0477482a7e" name="默认的" comment="">
-      <change afterPath="$PROJECT_DIR$/test/testEvent/event.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/testEvent/index.js" afterDir="false" />
+    <list default="true" id="58446d92-5d31-40c2-a6a8-5c6e2221d25b" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.vscode/launch.json" beforeDir="false" afterPath="$PROJECT_DIR$/.vscode/launch.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/extension.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/extension.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/global.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/global.d.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/module/publish.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/module/publish.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/threadpool/config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/threadpool/config.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/threadpool/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/threadpool/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/threadpool/threadpool.d.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/threadpool/utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/threadpool/utils.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/threadpool/worker.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/threadpool/worker.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/utils/fsUtils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/fsUtils.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/utils/imageMinify.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/imageMinify.ts" afterDir="false" />
@@ -27,7 +24,11 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectId" id="1lSYdNksqajo1pNcU5boPXxRJS5" />
+  <component name="PackageJsonUpdateNotifier">
+    <dismissed value="$PROJECT_DIR$/package.json" />
+  </component>
+  <component name="ProjectId" id="1lVQbJ6LVPb7OoEIZnoFc12ZCRd" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -40,37 +41,86 @@
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
-    <property name="nodejs.mocha.mocha_node_package_dir" value="" />
     <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
     <property name="ts.external.directory.path" value="$PROJECT_DIR$/node_modules/typescript/lib" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
-  <component name="RunManager">
-    <configuration default="true" type="NodeJSConfigurationType" singleton="false" path-to-js-file="$PROJECT_DIR$/out/extension.js">
+  <component name="RunManager" selected="Node.js.workertest.js">
+    <configuration name="workertest.js" type="NodeJSConfigurationType" temporary="true" application-parameters="--inspect" nameIsGenerated="true" path-to-js-file="workertest.js" working-dir="$PROJECT_DIR$/test">
       <method v="2" />
     </configuration>
-    <configuration name="extension.js" type="NodeJSConfigurationType" singleton="false" temporary="true" nameIsGenerated="true" path-to-js-file="$PROJECT_DIR$/out/extension.js" working-dir="$PROJECT_DIR$/out">
+    <configuration name="watch" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="watch" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
       <method v="2" />
     </configuration>
+    <list>
+      <item itemvalue="Node.js.workertest.js" />
+      <item itemvalue="npm.watch" />
+    </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Node.js.extension.js" />
+        <item itemvalue="npm.watch" />
+        <item itemvalue="Node.js.workertest.js" />
       </list>
     </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
-    <task active="true" id="Default" summary="默认任务">
-      <changelist id="b444284b-5e22-4b4e-b701-bc0477482a7e" name="默认的" comment="" />
-      <created>1607592045818</created>
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="58446d92-5d31-40c2-a6a8-5c6e2221d25b" name="Default Changelist" comment="" />
+      <created>1607679850335</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1607592045818</updated>
-      <workItem from="1607592048229" duration="179000" />
+      <updated>1607679850335</updated>
+      <workItem from="1607679854022" duration="1638000" />
+      <workItem from="1607681511427" duration="586000" />
+      <workItem from="1607682113823" duration="1349000" />
+      <workItem from="1607745795382" duration="6611000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/utils/imageMinify.ts</url>
+          <line>50</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/test/workertest.js</url>
+          <line>54</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="14" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>
