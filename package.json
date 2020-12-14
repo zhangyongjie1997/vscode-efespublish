@@ -2,7 +2,7 @@
 	"name": "vscode-efespublish",
 	"displayName": "vscode-efespublish",
 	"description": "A pro version for efesjs's publish command",
-	"version": "0.0.14",
+	"version": "0.0.19",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/zhangyongjie1997/vscode-efespublish.git"
@@ -22,11 +22,11 @@
 		"commands": [
 			{
 				"command": "efespublish.transformjs",
-				"title": "efes-publish: transformjs"
+				"title": "efes-publish:transformjs"
 			},
 			{
 				"command": "efespublish.publish",
-				"title": "efes-publish: publish"
+				"title": "efes-publish:publish"
 			}
 		],
 		"configuration": {
@@ -42,9 +42,9 @@
 	},
 	"scripts": {
 		"attach": "node ./out/utils/imageMinify.js",
-		"vscode:prepublish": "webpack --mode production",
-    "webpack": "webpack --mode development",
-    "webpack-dev": "webpack --mode development --watch",
+		"vscode:prepublish": "npm run compile",
+		"webpack": "webpack --mode development",
+		"webpack-dev": "webpack --mode development --watch",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
 		"pretest": "npm run compile && npm run lint",

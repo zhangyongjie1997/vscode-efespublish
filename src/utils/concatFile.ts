@@ -68,7 +68,10 @@ export const concatFile = (options: ConcatOptions): Promise<string> => {
             }
 
             if(rLessFile.test(src)){
-              const lessData = await less.render(fileString);
+              const lessData = await less.render(fileString, {
+                compress: false,
+                filename: src
+              });
               fileString = lessData.css || fileString;
             }
 
@@ -79,7 +82,7 @@ export const concatFile = (options: ConcatOptions): Promise<string> => {
             // fileString = cssData.css;
 
 
-            fileString = new CleanCss({}).minify(fileString).styles;
+            fileString = new CleanCss({rebase: false}).minify(fileString).styles;
 
             data += fileString || "";
 

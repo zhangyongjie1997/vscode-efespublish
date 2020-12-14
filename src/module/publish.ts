@@ -8,7 +8,7 @@ import { warning, error, info } from "../utils/utils";
 import { imageMinify } from "../utils/imageMinify";
 
 const window = vscode.window;
-let workDir = "", totalFileLength = 2; // 项目根目录&配置文件所在目录
+let workDir = "", totalFileLength = 2, startTime: number = 0; // 项目根目录&配置文件所在目录
 let publishing = false;
 
 process.on('uncaughtException', function(err) {
@@ -17,6 +17,7 @@ process.on('uncaughtException', function(err) {
 });
 
 export const publisher = async () => {
+  startTime = Date.now();
   totalFileLength = 2;
   const document = vscode.window.activeTextEditor?.document;
   if(!document){
@@ -100,9 +101,14 @@ const handleHtmlFiles = (progress: vscode.Progress<ProgressMessage>, topResolve)
     incrementProgress(progress, 0, `开始压缩图片`);
     await handleImageFiles(progress, topResolve);
     incrementProgress(progress, 100, "");
-    info("publish done!");
+    info(`publish 完成，耗时${getSecond(Date.now() - startTime)}s!`);
     publishing = false;
   });
+};
+
+const getSecond = (m: number): string => {
+  console.log(m);
+  return (m/1000).toFixed(2).toString();
 };
 
 const handleImageFiles = async (progress: vscode.Progress<ProgressMessage>, topResolve) => {

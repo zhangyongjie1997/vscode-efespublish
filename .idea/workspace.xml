@@ -7,14 +7,6 @@
     <list default="true" id="58446d92-5d31-40c2-a6a8-5c6e2221d25b" name="Default Changelist" comment="Default Changelist">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/module/publish.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/module/publish.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/module/transform.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/module/transform.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/threadpool/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/threadpool/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/concatFile.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/concatFile.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/fsUtils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/fsUtils.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/imageMinify.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/imageMinify.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/imageMinifyWorker.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/imageMinifyWorker.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -95,7 +87,7 @@
       <workItem from="1607745795382" duration="10642000" />
       <workItem from="1607772456706" duration="1175000" />
       <workItem from="1607914776394" duration="58000" />
-      <workItem from="1607914847062" duration="847000" />
+      <workItem from="1607914847062" duration="991000" />
     </task>
     <task id="LOCAL-00001" summary="Default Changelist">
       <created>1607764399022</created>
