@@ -35,7 +35,7 @@ export const tranformer = (textEditor: vscode.TextEditor) => {
 
   });
 
-  vscode.window.showInformationMessage('Hello World from autoTransformJs!');
+  vscode.window.showInformationMessage('autoTransformJs!');
 };
 
 

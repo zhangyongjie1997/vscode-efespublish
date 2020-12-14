@@ -20,6 +20,18 @@
 			"type": "node"
 		},
 		{
+			"name": "Run Webpack Extension",
+			"type": "extensionHost",
+			"request": "launch",
+			"args": [
+				"--extensionDevelopmentPath=${workspaceFolder}",
+			],
+			"outFiles": [
+				"${workspaceFolder}/out/**/*.js"
+			],
+			"autoAttachChildProcesses": true,
+		},
+		{
 			"name": "Run Extension",
 			"type": "extensionHost",
 			"request": "launch",

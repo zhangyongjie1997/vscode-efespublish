@@ -9,10 +9,10 @@ export const mkdir = async (url: string) => {
     console.info("mkdir:" + pathData.dir);
     if(!fs.existsSync(pathData.dir)){
       fs.mkdir(pathData.dir, () => {
-        resolve();
+        resolve(1);
       });
     }
-    resolve();
+    resolve(1);
   });
 };
 

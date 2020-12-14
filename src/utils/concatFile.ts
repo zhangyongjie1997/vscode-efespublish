@@ -56,7 +56,7 @@ export const concatFile = (options: ConcatOptions): Promise<string> => {
       const iterator = Aigle.resolve(srcs).eachSeries((src) => {
         return new Promise(resolve => {
           if(!src){
-            return resolve();
+            return resolve(1);
           }
 
           data += `\n\n\n/* SOURCE: ${src} */`;
@@ -97,7 +97,7 @@ export const concatFile = (options: ConcatOptions): Promise<string> => {
       const iterator = Aigle.resolve(srcs).eachSeries((src) => {
         return new Promise(resolve => {
           if(!src) {
-            return resolve();
+            return resolve(1);
           }
           data += `\n\n\n/* SOURCE: ${src} */`;
           // const readstream = fs.createReadStream(file, {encoding: "UTF8"});

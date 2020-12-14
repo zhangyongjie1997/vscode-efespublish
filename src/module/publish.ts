@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
 import * as path from "path";
-import * as fs from "fs";
 import Aigle from "aigle";
 import { concatFile, miniHtmlFile } from "../utils/concatFile";
 import findConfigFile from "../utils/findConfigFile";
@@ -18,6 +17,7 @@ process.on('uncaughtException', function(err) {
 });
 
 export const publisher = async () => {
+  totalFileLength = 2;
   const document = vscode.window.activeTextEditor?.document;
   if(!document){
     error("请打开配置文件后执行命令！");
@@ -38,19 +38,19 @@ export const publisher = async () => {
 };
 
 
-const handleProgress = async (progress: vscode.Progress<ProgressMessage>, cancellation: vscode.CancellationToken) => {
+const handleProgress = (progress: vscode.Progress<ProgressMessage>, cancellation: vscode.CancellationToken) => {
   cancellation.onCancellationRequested(handleCancel);
   let currentProgress = 0;  // html, image
   incrementProgress(progress, 0, "正在查找配置文件。。。");
   
-  return new Promise(async resolve => {
+  return new Promise(async topResolve => {
 
     const { config } = await findConfigFile(workDir);
 
     if(!config?.pkg){
       error("请检查配置文件是否正确！");
       publishing = false;
-      return resolve(null);
+      return topResolve(null);
     }
 
     incrementProgress(progress, 0, "发现配置文件，开始打包。。。");
@@ -82,12 +82,12 @@ const handleProgress = async (progress: vscode.Progress<ProgressMessage>, cancel
     });
     iterator.then(() => {  //开始处理html, images
       incrementProgress(progress, 0, "开始处理html, 图片文件。。。");
-      handleHtmlFiles(progress);
+      handleHtmlFiles(progress, topResolve);
     });
   });
 };
 
-const handleHtmlFiles = (progress: vscode.Progress<ProgressMessage>) => {
+const handleHtmlFiles = (progress: vscode.Progress<ProgressMessage>, topResolve) => {
   const htmlFileSrcs = findHtmlFiles(path.join(workDir, "/src"));
   const iterator = Aigle.resolve(htmlFileSrcs).eachSeries(async src => {
     const fileName = path.basename(src);
@@ -98,18 +98,19 @@ const handleHtmlFiles = (progress: vscode.Progress<ProgressMessage>) => {
   });
   iterator.then(async () => {
     incrementProgress(progress, 0, `开始压缩图片`);
-    await handleImageFiles(progress);
+    await handleImageFiles(progress, topResolve);
     incrementProgress(progress, 100, "");
     info("publish done!");
+    publishing = false;
   });
 };
 
-const handleImageFiles = async (progress: vscode.Progress<ProgressMessage>) => {
+const handleImageFiles = async (progress: vscode.Progress<ProgressMessage>, topResolve) => {
   const imageFileSrcs = findImageFiles(path.join(workDir, "/src/images"));
   const outputPath = path.join(workDir, "/images/");
   await mkdir(path.join(outputPath, "/temp.js"));  // 检查发布目录是否存在
   await imageMinify(imageFileSrcs, outputPath);
-  console.log("handleImageFiles done!!!!!!!!!!1");
+  topResolve(1);
   return 0;
 };
 

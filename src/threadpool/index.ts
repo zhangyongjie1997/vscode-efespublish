@@ -53,7 +53,7 @@ class UserWork extends EventEmitter {
   }
 
   // 直接取消任务，如果任务执行完就不能取消了， this.terminate是动态设置的
-  private cancel() {
+  public cancel() {
     if (this.state === WORK_STATE.END || this.state === WORK_STATE.CANCELED) {
       return false;
     } else {
@@ -211,7 +211,7 @@ class ThreadPool {
         this.totalWork -= (exitedThread.state === THREAD_STATE.BUSY ? 1 : 0);
       }
     });
-    worker.on("message", (result: WorkerMessage) => {
+    worker.on("message", async (result: WorkerMessage) => {
       const { work, event } = result;
       const { data, error, workId } = work as Work;
       // 通过workId拿到对应的userWork
@@ -484,7 +484,8 @@ class CPUThreadPool extends ThreadPool{
   constructor(options = defaultThreadPoolOptions){
     super({
       ...options,
-      coreThreads: cores,
+      // coreThreads: Math.floor(cores/2),
+      coreThreads: 1,
       expansion: false
     });
   }
