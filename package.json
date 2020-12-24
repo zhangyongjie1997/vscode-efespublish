@@ -2,7 +2,7 @@
 	"name": "vscode-efespublish",
 	"displayName": "vscode-efespublish",
 	"description": "A pro version for efesjs's publish command",
-	"version": "0.0.19",
+	"version": "0.0.21",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/zhangyongjie1997/vscode-efespublish.git"
@@ -54,13 +54,6 @@
 	"dependencies": {
 		"@babel/core": "^7.12.3",
 		"@babel/preset-env": "^7.12.1",
-		"@types/async": "^3.2.5",
-		"@types/babel__core": "^7.1.12",
-		"@types/babel__preset-env": "^7.9.1",
-		"@types/clean-css": "^4.2.2",
-		"@types/html-minifier": "^4.0.0",
-		"@types/less": "^3.0.2",
-		"@types/request": "^2.48.5",
 		"aigle": "^1.14.1",
 		"autoprefixer": "^10.0.4",
 		"clean-css": "^4.2.3",
@@ -70,6 +63,13 @@
 		"terser": "^5.5.1"
 	},
 	"devDependencies": {
+		"@types/async": "^3.2.5",
+		"@types/babel__core": "^7.1.12",
+		"@types/babel__preset-env": "^7.9.1",
+		"@types/clean-css": "^4.2.2",
+		"@types/html-minifier": "^4.0.0",
+		"@types/less": "^3.0.2",
+		"@types/request": "^2.48.5",
 		"@types/glob": "^7.1.3",
 		"@types/mocha": "^8.0.0",
 		"@types/node": "^12.19.8",

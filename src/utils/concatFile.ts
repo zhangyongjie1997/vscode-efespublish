@@ -2,10 +2,6 @@ import * as path from "path";
 import * as fs from "fs";
 import Aigle from "aigle";
 import { minify } from "terser";
-// import postcss from "postcss";
-// import * as postcssLess from "postcss-less";
-// import * as precss from "precss";
-// import * as Autoprefixer from "autoprefixer";
 import * as CleanCss from "clean-css";
 import * as less from "less";
 import * as htmlMinify from "html-minifier";
@@ -59,7 +55,7 @@ export const concatFile = (options: ConcatOptions): Promise<string> => {
             return resolve(1);
           }
 
-          data += `\n\n\n/* SOURCE: ${src} */`;
+          data += `\n\n/* SOURCE: ${src} */\n\n`;
 
           fs.readFile(src, {encoding: "utf8"}, async (err, fileString = "") => {
             if(err) {
@@ -82,7 +78,10 @@ export const concatFile = (options: ConcatOptions): Promise<string> => {
             // fileString = cssData.css;
 
 
-            fileString = new CleanCss({rebase: false}).minify(fileString).styles;
+            fileString = new CleanCss({
+              rebase: false,
+              compatibility: "ie7"
+            }).minify(fileString).styles;  // rebase false 不处理image路径
 
             data += fileString || "";
 
@@ -102,7 +101,7 @@ export const concatFile = (options: ConcatOptions): Promise<string> => {
           if(!src) {
             return resolve(1);
           }
-          data += `\n\n\n/* SOURCE: ${src} */`;
+          data += `\n\n/* SOURCE: ${src} */\n`;
           // const readstream = fs.createReadStream(file, {encoding: "UTF8"});
           // readstream.on("data", (chunk) => {
           //   data += chunk;

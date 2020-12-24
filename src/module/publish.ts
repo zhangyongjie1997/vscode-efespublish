@@ -58,28 +58,26 @@ const handleProgress = (progress: vscode.Progress<ProgressMessage>, cancellation
 
     const pkg = config.pkg;
     totalFileLength += Object.keys(pkg).length;
-    const iterator = Aigle.resolve(pkg).forEachSeries((inputs, output) => {
-      return new Promise(async resolve => {
-        const data = await concatFile({
-          inputs: inputs,
-          output: output,
-          workDir: workDir,
-        });
-
-        const outputPath = path.join(workDir, output);
-
-        await mkdir(outputPath);  // 检查发布目录是否存在
-
-        await writeFile(outputPath, data);
-
-        incrementProgress(progress, (1/totalFileLength) * 100, `发布${path.basename(output)}`);
-        resolve(null);
-
-        // const buf = Buffer.from(data);
-        // fs.writeFile(outputPath, buf, { encoding: "utf8" }, () => {
-        //   resolve();
-        // });
+    const iterator = Aigle.resolve(pkg).forEachSeries(async (inputs, output) => {
+      const data = await concatFile({
+        inputs: inputs,
+        output: output,
+        workDir: workDir,
       });
+
+      const outputPath = path.join(workDir, output);
+
+      await mkdir(outputPath);  // 检查发布目录是否存在
+
+      await writeFile(outputPath, data);
+
+      incrementProgress(progress, (1/totalFileLength) * 100, `发布${path.basename(output)}`);
+      return null;
+
+      // const buf = Buffer.from(data);
+      // fs.writeFile(outputPath, buf, { encoding: "utf8" }, () => {
+      //   resolve();
+      // });
     });
     iterator.then(() => {  //开始处理html, images
       incrementProgress(progress, 0, "开始处理html, 图片文件。。。");
@@ -113,6 +111,9 @@ const getSecond = (m: number): string => {
 
 const handleImageFiles = async (progress: vscode.Progress<ProgressMessage>, topResolve) => {
   const imageFileSrcs = findImageFiles(path.join(workDir, "/src/images"));
+  if(!imageFileSrcs) {
+    return topResolve(1);
+  }
   const outputPath = path.join(workDir, "/images/");
   await mkdir(path.join(outputPath, "/temp.js"));  // 检查发布目录是否存在
   await imageMinify(imageFileSrcs, outputPath);

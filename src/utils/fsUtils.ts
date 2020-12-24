@@ -28,6 +28,9 @@ export const findHtmlFiles = (sourcePath: string): string[] => {
 };
 
 export const findImageFiles = (sourcePath: string): string[] => {
+  if(!fs.existsSync(sourcePath)) {
+    return null;
+  }
   const dir = fs.readdirSync(sourcePath);
   const imageFilePaths: string[] = [];
   dir.forEach(item => {
