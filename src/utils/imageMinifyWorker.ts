@@ -3,32 +3,32 @@ const request = require("request");
 const fs = require("fs");
 const path = require("path");
 
-const mini = function mini(options): Promise<any> {
-  const src = options.src;
-  return new Promise(async resolve => {
-
-    const data = fs.readFileSync(src);
-
-    if(!data){
-      resolve("");
-    }else{
-      const res = await tinypng(data, src);
-
-      resolve(res);
-    }
-    // fs.readFile(src, async (err, data) => {
-    //     debugger;
-    //   if(err){
-    //     resolve(null);
-    //   }else{
-    //     const res = await tinypng(data, src);
-    //     resolve(res);
-    //   }
-    // });
-  });
+const copy = async ({ src }) => {
+  const data = fs.readFileSync(src);
 };
 
-function tinypng(file: any, src): Promise<any> {
+const mini = async ({ src }): Promise<string>=> {
+
+  const data = fs.readFileSync(src);
+
+  if(!data){
+    return "";
+  } else {
+    const res = await tinypng(data, src);
+    return res;
+  }
+  // fs.readFile(src, async (err, data) => {
+  //     debugger;
+  //   if(err){
+  //     resolve(null);
+  //   }else{
+  //     const res = await tinypng(data, src);
+  //     resolve(res);
+  //   }
+  // });
+};
+
+function tinypng(file: any, src): Promise<string> {
   return new Promise(resolve => {
     request({
       url: 'https://tinypng.com/web/shrink',
@@ -65,4 +65,7 @@ function tinypng(file: any, src): Promise<any> {
   });
 };
 
-export default mini;
+export {
+  mini,
+  copy
+};

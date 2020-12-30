@@ -1,36 +1,33 @@
 import * as fs from "fs";
 import * as path from "path";
-import miniRequest from "./imageMinifyWorker";
+import {mini as miniRequest} from "./imageMinifyWorker";
 import { writeFile } from "./fsUtils";
 import { defaultCpuThreadPool } from "../threadpool/index";
 
 const workerPath = path.resolve(__dirname, "./imageMinifyWorker.js");
 
 export const imageMinify = async (imagePaths: string[], outputPath: string) => {
-  const workQueue: Promise<any>[] = [];
+  const workQueue: Promise<void>[] = [];
   imagePaths.forEach((item) => {
     workQueue.push(mini(item, outputPath));
   });
   return Promise.all.call(Promise, workQueue);
 };
 
-const mini = (src: string, outputPath: string) => {
-  return new Promise((resolve) => {
-    miniRequest({src}).then(async res => {
-      await writeFile(path.join(outputPath, "/", path.basename(src)), res);
-      resolve(1);
-    });
-    // defaultCpuThreadPool.submit(workerPath, { src }).then((worker) => {
-    //   worker.on("done", async (res) => {
-    //     await writeFile(path.join(outputPath, "/", path.basename(src)), res);
-    //     worker.terminate();
-    //     resolve(res);
-    //   });
-    //   worker.on("error", async () => {
-    //     await writeFile(path.join(outputPath, "/", path.basename(src)), fs.readFileSync(src));
-    //     worker.terminate();
-    //     resolve(null);
-    //   });
-    // });
+const mini = async (src: string, outputPath: string) => {
+  const res = await miniRequest({src});
+  await writeFile(path.join(outputPath, "/", path.basename(src)), res);
+};
+
+const copy = async (src: string, outputPath: string) => {
+  const data = fs.readFileSync(src);
+  await writeFile(path.join(outputPath, "/", path.basename(src)), data);
+};
+
+export const imageCopy = async (imagePaths: string[], outputPath: string) => {
+  const workQueue: Promise<void>[] = [];
+  imagePaths.forEach((item) => {
+    workQueue.push(copy(item, outputPath));
   });
+  return Promise.all.call(Promise, workQueue);
 };

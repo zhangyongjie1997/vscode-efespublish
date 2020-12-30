@@ -55,7 +55,7 @@ export const concatFile = (options: ConcatOptions): Promise<string> => {
             return resolve(1);
           }
 
-          data += `\n\n/* SOURCE: ${src} */\n\n`;
+          data += `\n/* SOURCE: ${src} */\n`;
 
           fs.readFile(src, {encoding: "utf8"}, async (err, fileString = "") => {
             if(err) {
@@ -101,7 +101,7 @@ export const concatFile = (options: ConcatOptions): Promise<string> => {
           if(!src) {
             return resolve(1);
           }
-          data += `\n\n/* SOURCE: ${src} */\n`;
+          data += `\n/* SOURCE: ${src} */\n`;
           // const readstream = fs.createReadStream(file, {encoding: "UTF8"});
           // readstream.on("data", (chunk) => {
           //   data += chunk;

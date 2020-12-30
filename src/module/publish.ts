@@ -5,11 +5,11 @@ import { concatFile, miniHtmlFile } from "../utils/concatFile";
 import findConfigFile from "../utils/findConfigFile";
 import { mkdir, findHtmlFiles, writeFile, findImageFiles } from "../utils/fsUtils";
 import { warning, error, info } from "../utils/utils";
-import { imageMinify } from "../utils/imageMinify";
+import { imageMinify, imageCopy } from "../utils/imageMinify";
 
 const window = vscode.window;
 let workDir = "", totalFileLength = 2, startTime: number = 0; // 项目根目录&配置文件所在目录
-let publishing = false;
+let publishing = false, concatFileConfig = null;
 
 process.on('uncaughtException', function(err) {
   publishing = false;
@@ -47,6 +47,8 @@ const handleProgress = (progress: vscode.Progress<ProgressMessage>, cancellation
   return new Promise(async topResolve => {
 
     const { config } = await findConfigFile(workDir);
+
+    concatFileConfig = config;
 
     if(!config?.pkg){
       error("请检查配置文件是否正确！");
@@ -116,9 +118,14 @@ const handleImageFiles = async (progress: vscode.Progress<ProgressMessage>, topR
   }
   const outputPath = path.join(workDir, "/images/");
   await mkdir(path.join(outputPath, "/temp.js"));  // 检查发布目录是否存在
+  if(typeof concatFileConfig.imgMin !== "undefined" && !concatFileConfig.img){  // 不压缩图片
+    await imageCopy(imageFileSrcs, outputPath);
+    topResolve(1);
+    return 1;
+  }
   await imageMinify(imageFileSrcs, outputPath);
   topResolve(1);
-  return 0;
+  return 1;
 };
 
 
