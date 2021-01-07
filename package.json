@@ -27,6 +27,14 @@
 			{
 				"command": "efespublish.publish",
 				"title": "efes-publish:publish"
+			},
+			{
+				"command": "efespublish.watch",
+				"title": "efes-publish:watch"
+			},
+			{
+				"command": "efespublish.stopWatch",
+				"title": "efes-publish:stop watch"
 			}
 		],
 		"configuration": {
@@ -56,6 +64,7 @@
 		"@babel/preset-env": "^7.12.1",
 		"aigle": "^1.14.1",
 		"autoprefixer": "^10.0.4",
+		"chokidar": "^3.5.0",
 		"clean-css": "^4.2.3",
 		"html-minifier": "^4.0.0",
 		"less": "^3.12.2",

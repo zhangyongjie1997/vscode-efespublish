@@ -17,15 +17,6 @@ const mini = async ({ src }): Promise<string>=> {
     const res = await tinypng(data, src);
     return res;
   }
-  // fs.readFile(src, async (err, data) => {
-  //     debugger;
-  //   if(err){
-  //     resolve(null);
-  //   }else{
-  //     const res = await tinypng(data, src);
-  //     resolve(res);
-  //   }
-  // });
 };
 
 function tinypng(file: any, src): Promise<string> {

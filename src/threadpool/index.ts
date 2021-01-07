@@ -164,7 +164,7 @@ class ThreadPool {
 
     this.threadQueue = [];
 
-    this.coreThreads = ~~(options.coreThreads as any) || config.CORE_THREADS;
+    this.coreThreads = ~~(options.coreThreads) || config.CORE_THREADS;
 
     this.maxThreads = options.expansion !== false ? Math.max(this.coreThreads, config.MAX_THREADS) : this.coreThreads;
 
@@ -172,7 +172,7 @@ class ThreadPool {
     
     this.preCreate = options.preCreate === true;
     
-    this.maxIdleTime = ~~(options.maxIdleTime as any) || config.MAX_IDLE_TIME;
+    this.maxIdleTime = ~~(options.maxIdleTime) || config.MAX_IDLE_TIME;
     
     this.preCreate && this.preCreateThreads();
     
@@ -184,9 +184,9 @@ class ThreadPool {
     
     this.totalWork = 0;
    
-    this.maxWork = ~~(options.maxWork as any) || config.MAX_WORK;
+    this.maxWork = ~~(options.maxWork) || config.MAX_WORK;
     
-    this.timeout = ~~(options.timeout as any);
+    this.timeout = ~~(options.timeout);
 
     this.pollIdle();
   }
@@ -253,7 +253,7 @@ class ThreadPool {
         default: break;
       }
     });
-    worker.on("error", (...args: any[]) => {
+    worker.on("error", (...args: Array<any>) => {
       console.error(...args);
     });
 
@@ -343,7 +343,7 @@ class ThreadPool {
                   const work = this.workQueue.shift();  // 取出最先进入队列的任务
                   // maxWork为1时， work会为空
                   if(work && this.userWorkPool.get(work.workId)){ // 如果当前任务在执行
-                    this.cancelWork(this.userWorkPool.get(work.workId) as any);
+                    this.cancelWork(this.userWorkPool.get(work.workId));
                   } else {
                     return reject(new Error("no work can be discarded"));
                   }

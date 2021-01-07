@@ -1,19 +1,12 @@
-import * as path from "path";
-import * as fs from "fs";
 import Aigle from "aigle";
 import { minify } from "terser";
 import * as CleanCss from "clean-css";
 import * as less from "less";
 import * as htmlMinify from "html-minifier";
+import {Base} from "./base";
 
 import { warning, error } from "../utils/utils";
 import { rCssFile, rJsFile, rLessFile, rMinFile } from "../utils/fileRegExps";
-
-interface ConcatOptions {
-  inputs: Array<PkgItem>
-  output: string
-  workDir: string
-}
 
 
 const browsersList = [
@@ -25,127 +18,129 @@ const browsersList = [
   "last 3 iOS versions"
 ];
 
-
-export const concatFile = (options: ConcatOptions): Promise<string> => {
-  return new Promise(resolve => {
-    const wordDir = options.workDir;
-    const output = options.output;
-    const srcs = options.inputs.map(function(src) {
-      let _root = wordDir;
-      let _src = path.join(_root, src);
-      if (src.match(/^!/)) { // 处理 minimatch 排除规则
-        _src = "!" + path.join(_root, src.replace(/^!/, ''));
-      }
-  
-      if (!src.match(/^!/)) {
-        try {
-          fs.accessSync(_src);
-        } catch (e) {
-          warning('文件或目录不存在：' + _src);
-          return "";
+class ConcatFile extends Base {
+  concatFile(options: ConcatOptions): Promise<string> {
+    return new Promise(resolve => {
+      const wordDir = options.workDir;
+      const output = options.output;
+      const srcs = options.inputs.map((src) => {
+        let _root = wordDir;
+        let _src = this.path.join(_root, src);
+        if (src.match(/^!/)) { // 处理 minimatch 排除规则
+          _src = "!" + this.path.join(_root, src.replace(/^!/, ''));
         }
-      }
-      return _src;
-    });
-    if (rCssFile.test(output)){  // css文件
-      let data = "";
-      const iterator = Aigle.resolve(srcs).eachSeries((src) => {
-        return new Promise(resolve => {
-          if(!src){
-            return resolve(1);
+    
+        if (!src.match(/^!/)) {
+          try {
+            this.fs.accessSync(_src);
+          } catch (e) {
+            warning('文件或目录不存在：' + _src);
+            return "";
           }
-
-          data += `\n/* SOURCE: ${src} */\n`;
-
-          fs.readFile(src, {encoding: "utf8"}, async (err, fileString = "") => {
-            if(err) {
-              fileString = "/* 读取失败 */";
-              error(`读取文件${src}失败`);
+        }
+        return _src;
+      });
+      if (rCssFile.test(output)){  // css文件
+        let data = "";
+        const iterator = Aigle.resolve(srcs).eachSeries((src) => {
+          return new Promise(resolve => {
+            if(!src){
+              return resolve(1);
             }
-
-            if(rLessFile.test(src)){
-              const lessData = await less.render(fileString, {
-                compress: false,
-                filename: src
-              });
-              fileString = lessData.css || fileString;
+  
+            data += `\n/* SOURCE: ${src} */\n`;
+  
+            this.fs.readFile(src, {encoding: "utf8"}, async (err, fileString = "") => {
+              if(err) {
+                fileString = "/* 读取失败 */";
+                error(`读取文件${src}失败`);
+              }
+  
+              if(rLessFile.test(src)){
+                const lessData = await less.render(fileString, {
+                  compress: false,
+                  filename: src
+                });
+                fileString = lessData.css || fileString;
+              }
+  
+              // const cssData = await postcss([precss, Autoprefixer({ "overrideBrowserslist": browsersList })]).process(fileString, {
+              //   syntax: postcssLess,
+              //   from: undefined,
+              // });
+              // fileString = cssData.css;
+  
+  
+              fileString = new CleanCss({
+                rebase: false,
+                compatibility: "ie7"
+              }).minify(fileString).styles;  // rebase false 不处理image路径
+  
+              data += fileString || "";
+  
+              resolve(data);
+            });
+  
+          });
+        });
+        iterator.then(() => {
+          resolve(data);
+        });
+      }
+      else if(rJsFile.test(output)){  //js文件
+        let data = "";
+        const iterator = Aigle.resolve(srcs).eachSeries((src) => {
+          return new Promise(resolve => {
+            if(!src) {
+              return resolve(1);
             }
-
-            // const cssData = await postcss([precss, Autoprefixer({ "overrideBrowserslist": browsersList })]).process(fileString, {
-            //   syntax: postcssLess,
-            //   from: undefined,
+            data += `\n/* SOURCE: ${src} */\n`;
+            // const readstream = fs.createReadStream(file, {encoding: "UTF8"});
+            // readstream.on("data", (chunk) => {
+            //   data += chunk;
             // });
-            // fileString = cssData.css;
-
-
-            fileString = new CleanCss({
-              rebase: false,
-              compatibility: "ie7"
-            }).minify(fileString).styles;  // rebase false 不处理image路径
-
-            data += fileString || "";
-
-            resolve(data);
-          });
-
-        });
-      });
-      iterator.then(() => {
-        resolve(data);
-      });
-    }
-    else if(rJsFile.test(output)){  //js文件
-      let data = "";
-      const iterator = Aigle.resolve(srcs).eachSeries((src) => {
-        return new Promise(resolve => {
-          if(!src) {
-            return resolve(1);
-          }
-          data += `\n/* SOURCE: ${src} */\n`;
-          // const readstream = fs.createReadStream(file, {encoding: "UTF8"});
-          // readstream.on("data", (chunk) => {
-          //   data += chunk;
-          // });
-          // readstream.on("end", () => {
-          //   resolve(data);
-          // });
-
-          fs.readFile(src, {encoding: "utf8"}, async (err, fileString = "") => {
-            if(err) {
-              fileString = "/* 读取失败 */";
-              error(`读取文件${src}失败`);
-            }
-            if(!rMinFile.test(path.dirname(src))){
-              const minifyString = await minify(fileString);
-              fileString = minifyString.code || "";
-            }
-            data += fileString;
-            resolve(data);
+            // readstream.on("end", () => {
+            //   resolve(data);
+            // });
+  
+            this.fs.readFile(src, {encoding: "utf8"}, async (err, fileString = "") => {
+              if(err) {
+                fileString = "/* 读取失败 */";
+                error(`读取文件${src}失败`);
+              }
+              if(!rMinFile.test(this.path.dirname(src))){
+                const minifyString = await minify(fileString);
+                fileString = minifyString.code || "";
+              }
+              data += fileString;
+              resolve(data);
+            });
           });
         });
-      });
-      iterator.then(() => {
-        resolve(data);
-      });
-    }
-  });
-};
-
-export const miniHtmlFile = (htmlFileSrc: string): Promise<any> => {
-  const miniHtmlConfig = {
-    removeComments: true,
-    collapseWhitespace: true,
-    minifyJS: true,
-    minifyCSS: true,
-  };
-  return new Promise(resolve => {
-    fs.readFile(htmlFileSrc, {encoding: "utf8"}, async (err, fileString = "") => {
-      if(err) {
-        fileString = "/* 读取失败 */";
-        error(`读取文件${htmlFileSrc}失败`);
+        iterator.then(() => {
+          resolve(data);
+        });
       }
-      fileString = htmlMinify.minify(fileString, miniHtmlConfig);
-      resolve(fileString);
     });
-  });
-};
+  }
+  miniHtmlFile (htmlFileSrc: string): Promise<string> {
+    const miniHtmlConfig = {
+      removeComments: true,
+      collapseWhitespace: true,
+      minifyJS: true,
+      minifyCSS: true,
+    };
+    return new Promise(resolve => {
+      this.fs.readFile(htmlFileSrc, {encoding: "utf8"}, async (err, fileString = "") => {
+        if(err) {
+          fileString = "/* 读取失败 */";
+          error(`读取文件${htmlFileSrc}失败`);
+        }
+        fileString = htmlMinify.minify(fileString, miniHtmlConfig);
+        resolve(fileString);
+      });
+    });
+  }
+}
+
+export {ConcatFile};

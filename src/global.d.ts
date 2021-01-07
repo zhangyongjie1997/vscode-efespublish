@@ -17,6 +17,12 @@ interface ConfigData {
   [key: string]: any
 }
 
+interface ConcatOptions {
+  inputs: Array<PkgItem>
+  output: string
+  workDir: string
+}
+
 interface ProgressMessage {
   increment: number;
   message: string;

@@ -1,6 +1,8 @@
 import * as fs from "fs";
 import * as path from "path";
+import { TextDocument } from "vscode";
 import { rHtmlFile, rImageFile } from "./fileRegExps";
+import { error } from "./utils";
 
 
 export const mkdir = async (url: string) => {
@@ -49,4 +51,45 @@ export const writeFile = (path: string, data: any): Promise<void> => {
       resolve();
     });
   });
+};
+
+const CONFIG_FILE_NAME = "concatfile.json";
+const find = (baseUrl: string): {
+  config?: ConfigData,
+  configFilePath?: string
+} => {
+  const filePath = path.join(baseUrl, "/", CONFIG_FILE_NAME);
+  const exits = fs.existsSync(filePath);
+  if(exits){
+    let fileData = fs.readFileSync(filePath, "utf8"), configData: AnyObject = {};
+    if(fileData){
+      try {
+        configData = JSON.parse(fileData);
+      } catch (error) { configData = {}; }
+    }
+    return {config: configData, configFilePath: filePath};
+  }
+  return {};
+};
+
+/**
+ * 
+ * @param basePath 开始查找的目录
+ * @TODO 从当前目录开始逐层向上查找
+ */
+export const findConfigFile = async (basePath: string): Promise<{
+  config?: ConfigData,
+  configFilePath?: string
+}>  => {
+  return find(basePath);
+};
+
+
+export const getWorkDir = (document?: TextDocument): string => {
+  if(document){
+    return path.parse(document.fileName).dir;
+  }else{
+    error("请打开配置文件后执行命令！");
+    return "";
+  }
 };
