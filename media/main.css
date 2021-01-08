@@ -1,0 +1,38 @@
+body {
+	background-color: transparent;
+}
+
+.watcher-list {
+	list-style: none;
+	padding: 0;
+}
+
+.watcher-entry {
+	width: 100%;
+	display: flex;
+	margin-bottom: 0.2em;
+	border: 1px solid var(--vscode-input-border);
+}
+
+.watcher-btn {
+	width: 2.5em;
+	height: 2em;
+}
+
+.watcher-input {
+	display: inline-block;
+	flex: 1;
+	width: 100%;
+	overflow-x: scroll;
+	color: var(--vscode-input-foreground);
+	background-color: var(--vscode-input-background);
+	border: none;
+	padding: 0 0.2em;
+}
+
+.watcher-path{
+	width: 100%;
+	margin-bottom: 0.1em;
+	word-break: break-all;
+	white-space: pre-wrap;
+}

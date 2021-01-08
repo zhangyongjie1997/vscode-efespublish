@@ -22,10 +22,6 @@ class Publisher{
   private concatFileConfig: AnyObject = null;
   private topResolve: Function = null;
 
-  constructor(){
-    console.log("constructor");
-  }
-
   public publish(){
     this.startTime = Date.now();
     this.totalFileLength = 2;

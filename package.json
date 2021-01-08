@@ -19,6 +19,15 @@
 	],
 	"main": "./out/extension.js",
 	"contributes": {
+		"views": {
+			"explorer": [
+				{
+					"type": "webview",
+					"id": "efeswatcher.configWatcher",
+					"name": "watcher"
+				}
+			]
+		},
 		"commands": [
 			{
 				"command": "efespublish.transformjs",
@@ -37,6 +46,15 @@
 				"title": "efes-publish:stop watch"
 			}
 		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "efespublish.stopWatch",
+					"group": "navigation",
+					"when": "view == efeswatcher.configWatcher"
+				}
+			]
+		},
 		"configuration": {
 			"title": "autotransformjs",
 			"properties": {
