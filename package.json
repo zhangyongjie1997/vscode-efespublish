@@ -2,7 +2,7 @@
 	"name": "vscode-efespublish",
 	"displayName": "vscode-efespublish",
 	"description": "A pro version for efesjs's publish command",
-	"version": "0.0.22",
+	"version": "0.0.23",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/zhangyongjie1997/vscode-efespublish.git"
@@ -15,7 +15,11 @@
 		"Other"
 	],
 	"activationEvents": [
-		"*"
+		"onView:efeswatcher.configWatcher",
+		"onCommand:efespublish.transformjs",
+		"onCommand:efespublish.publish",
+		"onCommand:efespublish:watch",
+		"onCommand:efespublish.stopWatch"
 	],
 	"main": "./out/extension.js",
 	"contributes": {

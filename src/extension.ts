@@ -4,6 +4,7 @@ import * as vscode from "vscode";
 import { tranformer } from "./module/transformer";
 import { Publisher } from "./module/publisher";
 import { Watcher, WatcherViewProvider } from "./module/watcher";
+import { info } from "./utils/utils";
 
 
 
@@ -12,7 +13,7 @@ export const activate = (context: vscode.ExtensionContext) => {
 
 	const watcher = new Watcher();
 	const publisher = new Publisher();
-	const provider = new WatcherViewProvider(context.extensionUri);
+	const provider = new WatcherViewProvider(context.extensionUri, watcher);
 
 	process.on('uncaughtException', function (err) {
 		publisher.handleCancel();
@@ -29,13 +30,17 @@ export const activate = (context: vscode.ExtensionContext) => {
 	}));
 	context.subscriptions.push(vscode.commands.registerTextEditorCommand('efespublish.transformjs', tranformer));
 	context.subscriptions.push(vscode.commands.registerCommand('efespublish.watch', async () => {
-		const newWatcher = await watcher.watch();
-		if(newWatcher.path){
-			provider.addWatcher(newWatcher);
+		if(provider.ready){
+			const newWatcher = await watcher.watch();
+			if(newWatcher.path){
+				provider.addWatcher(newWatcher);
+			}
+		}else{
+			info("watcher还没准备好！");
 		}
 	}));
 	context.subscriptions.push(vscode.commands.registerCommand('efespublish.stopWatch', () => {
-		watcher.stop();
+		watcher.close();
 	}));
 };
 

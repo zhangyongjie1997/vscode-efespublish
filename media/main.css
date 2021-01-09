@@ -5,6 +5,7 @@ body {
 .watcher-list {
 	list-style: none;
 	padding: 0;
+	margin-bottom: 0.2em;
 }
 
 .watcher-entry {

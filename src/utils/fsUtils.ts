@@ -75,7 +75,6 @@ const find = (baseUrl: string): {
 /**
  * 
  * @param basePath 开始查找的目录
- * @TODO 从当前目录开始逐层向上查找
  */
 export const findConfigFile = async (basePath: string): Promise<{
   config?: ConfigData,
@@ -91,5 +90,42 @@ export const getWorkDir = (document?: TextDocument): string => {
   }else{
     error("请打开配置文件后执行命令！");
     return "";
+  }
+};
+
+/**
+ * @description 逐层向上查找直到找到concatFile.json
+ * @param {string} file
+ */
+export const getWorkDirByFile = (file) => {
+  let dir = path.parse(file).dir, 
+    lastDir = "", 
+    deep = 0, 
+    maxDeep = 5,
+    concatConfigFileName = "concatfile.json",
+    res = "";
+
+  loop: while(dir !== lastDir) {
+    lastDir = dir;
+    if(deep > maxDeep) {
+      break loop;
+    }
+    const dirInfo = fs.readdirSync(dir);
+    const found = dirInfo.find(item => {
+      if(item === concatConfigFileName){
+        const state = fs.statSync(path.join(dir, item));
+        if(state.isFile){
+          res = dir;
+          return true;
+        }
+      }
+    });
+
+    if(found) {
+      return res;
+    }
+
+    deep++;
+    dir = path.resolve(dir, "..");
   }
 };

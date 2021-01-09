@@ -2,23 +2,18 @@
 
 (function () {
   const vscode = acquireVsCodeApi();
-
   const messageEl = document.getElementById("message");
-  const btn = document.getElementById("btn");
-  messageEl.innerText = "aaaa";
-  btn.addEventListener("click", () => {
-    vscode.postMessage({type: 1});
-  });
+  const watcherList = document.getElementById("watcher-list");
   
-  console.log("aaaaa");
+  window.onerror = function(e){
+		messageEl.innerText = JSON.stringify(e);
+  };
 
   /** @type {Array<{ value: string }>} */
-  let watchers = oldState.watcher;
+  // let watchers = oldState.watcher;
 
   window.addEventListener("message", (event) => {
     const message = event.data;
-    vscode.postMessage({ type: '1' });
-		messageEl.innerText = message;
     switch (message.type) {
       case "updateWatcher": {
         updateWatcher(message.data);
@@ -36,51 +31,63 @@
     }
   });
 
-  /**
-   * @param {Array<{ value: string }>} colors
-   */
-  function updateWatcherList(colors) {
-    const ul = document.querySelector(".color-list");
-    ul.textContent = "";
-    for (const color of colors) {
-      const li = document.createElement("li");
-      li.className = "color-entry";
-
-      const colorPreview = document.createElement("div");
-      colorPreview.className = "color-preview";
-      colorPreview.style.backgroundColor = `#${color.value}`;
-      colorPreview.addEventListener("click", () => {
-        onWatcherClicked(color.value);
-      });
-      li.appendChild(colorPreview);
-
-      const input = document.createElement("input");
-      input.className = "color-input";
-      input.type = "text";
-      input.value = color.value;
-      input.addEventListener("change", (e) => {
-        const value = e.target.value;
-        if (!value) {
-          // Treat empty value as delete
-          colors.splice(colors.indexOf(color), 1);
-        } else {
-          color.value = value;
-        }
-        updateWatcherList(colors);
-      });
-      li.appendChild(input);
-
-      ul.appendChild(li);
+  watcherList.addEventListener("click", function(e /** @type {Event} */) {
+    const target = e.target;
+    switch (true){
+      case target.classList.contains("watcher-btn"): {
+        onWatcherStopClick(target);
+        break;
+      }
+      case target.classList.contains("watcher-input"): {
+        
+        break;
+      }
     }
+  });
+
+  /**
+   * 
+   * @param {{path: string, root: string, workDir: string}} watcher
+   */
+  function createWatcherItem(watcher) {
+    const li = document.createElement("li");
+    const span = document.createElement("span");
+    const button = document.createElement("button");
+    li.classList.add("watcher-entry");
+    span.classList.add("watcher-input");
+    span.dataset.path = watcher.path;
+    span.innerText = watcher.name;
+    span.dataset.path = watcher.path;
+    button.classList.add("watcher-btn");
+    button.innerText = "stop";
+    button.dataset.path = watcher.path;
+    li.appendChild(span);
+    li.appendChild(button);
+    return li;
+  }
+
+  /**
+   * @param {HTMLButtonElement} target 
+   */
+  function onWatcherStopClick(target){
+    const path = target.dataset.path;
+    vscode.postMessage({type: "stopWatcher", data: path});
+    target.parentElement.remove();
   }
 
   /**
    * @param {string} color
    */
-	function onWatcherClicked(color) {}
-	
+	function onWatcherSpanClicked(color) {
+
+  }
+  
+  /**
+   * @param {{path: string, root: string, workDir: string}} newWatcher 
+   */
 	function addWatcher(newWatcher){
-		console.log(newWatcher);
+    const item = createWatcherItem(newWatcher);
+    watcherList.appendChild(item);
 	}
 
   function updateWatcher() {

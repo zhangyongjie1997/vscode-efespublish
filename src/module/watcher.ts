@@ -1,24 +1,38 @@
 import * as vscode from "vscode";
+import * as path from "path";
 import { FSWatcher } from "chokidar";
 import { Base } from "../utils/base";
-import { findConfigFile, getWorkDir, mkdir, writeFile } from "../utils/fsUtils";
+import { findConfigFile, getWorkDir, mkdir, writeFile, getWorkDirByFile } from "../utils/fsUtils";
 import { error, info, warning } from "../utils/utils";
-import { rCssFile, rJsFile, rLessFile } from "../utils/fileRegExps";
+import { rCssFile, rHtmlFile, rImageFile, rJsFile, rLessFile } from "../utils/fileRegExps";
 import { ConcatFile } from "../utils/concatFile";
-import { ENGINE_METHOD_DIGESTS } from "constants";
+import { ImageMinier } from "../utils/imageMinify";
 
 interface IWatcherOptions {
   path: string;
   root: string;
+  workDir: string;
+  concatFileConfig: ConfigData;
+  [key: string]: string | ConfigData;
 }
 
 const window = vscode.window;
 const concatFile = new ConcatFile();
 
+function updateInfo(target, property, descriptor){
+  const func: Function = descriptor.value;
+  descriptor.value = async function (file){
+    try {
+      await func.call(this, file);
+    } catch (error) {}
+    info(`更新「${path.basename(file)}」`);
+  };
+}
+
 class Watcher extends Base {
-  private _workDir: string = "";
-  private _concatFileConfig: ConfigData = {};
+
   private readonly _defaultWatchSrc = "src";
+  private readonly _pkgCatcher = new Map<string, ConcatOptions>();
   private _fsWatcher: FSWatcher = new FSWatcher();
   private output: vscode.OutputChannel = window.createOutputChannel("efesWatcher");
   private _watchers = new Map<string, IWatcherOptions>();
@@ -34,14 +48,16 @@ class Watcher extends Base {
   }
 
   async watch(): Promise<IWatcherOptions> {
-    this._workDir = getWorkDir(window.activeTextEditor?.document);
-    const { config } = await findConfigFile(this._workDir);
-    this._concatFileConfig = config;
-    if (!config) {
+
+    const _workDir = getWorkDir(window.activeTextEditor?.document);
+
+    const { config: concatFileConfig } = await findConfigFile(_workDir);
+
+    if (!concatFileConfig) {
       warning("请检查配置文件是否正确！");
       return {} as IWatcherOptions;
     }
-    const _watchPath = this.path.resolve(this._workDir, this._concatFileConfig.src || this._defaultWatchSrc);
+    const _watchPath = this._getWatchPath(_workDir, concatFileConfig);
     if (this._watchers.has(_watchPath)) {
       error("当前目录已经添加");
       return {} as IWatcherOptions;
@@ -49,19 +65,23 @@ class Watcher extends Base {
     this._fsWatcher.add(_watchPath);
     const newWatcher: IWatcherOptions = {
       path: _watchPath,
-      root: this._concatFileConfig.src || this._defaultWatchSrc
+      root: concatFileConfig.src || this._defaultWatchSrc,
+      workDir: _workDir,
+      concatFileConfig: concatFileConfig
     };
     this._watchers.set(_watchPath, newWatcher);
+    const watched = this._fsWatcher.getWatched();
     return newWatcher;
+  }
+
+  private _getWatchPath(workDir: string, concatFileConfig: ConfigData): string {
+    return this.path.resolve(workDir, concatFileConfig.src || this._defaultWatchSrc);
   }
 
   public get watchers() {
     return this._watchers;
   }
 
-  private handleFileCreate(file: string) {
-
-  }
 
   private handleFileChange(file: string) {
     switch (true) {
@@ -72,54 +92,103 @@ class Watcher extends Base {
       case rCssFile.test(file):
         this.handleStyleFileChange(file);
         break;
+      case rHtmlFile.test(file):
+        this.handleHtmlFileChange(file);
+        break;
     }
   }
 
+  private async handleFileCreate(file: string) {
+    // TODO 处理新建文件
+    switch (true){
+      case rHtmlFile.test(file):
+        this.handleHtmlFileChange(file);
+        break;
+      case rImageFile.test(file):
+        this.handleImageFile(file);
+        break;
+    }
+  }
+
+  @updateInfo
+  private async handleImageFile(file: string){
+    const workDir = getWorkDirByFile(file);
+    const imageMinier = new ImageMinier(), 
+      outputPath = this.path.join(workDir, "/images/");
+    await mkdir(this.path.join(outputPath, "/temp.js"));
+    await imageMinier.copy(file, outputPath);
+  }
+
+  @updateInfo
+  private async handleHtmlFileChange(file: string){
+    // TODO 处理html文件
+    const data = await concatFile.miniHtmlFile(file);
+    const fileName = this.path.basename(file);
+    const workDir = getWorkDirByFile(file);
+    await writeFile(this.path.join(workDir, "/", fileName), data);
+  }
+
+  @updateInfo
   private async handleJsFileChange(file: string) {
-    const options = this.findPkg(file);
+    const options = await this.findPkg(file);
     const data = await concatFile.concatFile(options);
-    const outputPath = this.path.join(this._workDir, options.output);
+    const outputPath = this.path.join(options.workDir, options.output);
     await mkdir(outputPath);  // 检查发布目录是否存在
     await writeFile(outputPath, data);
-    info(`更新「${options.output}」`);
   }
 
+  @updateInfo
   private async handleStyleFileChange(file: string) {
-    const options = this.findPkg(file);
+    const options = await this.findPkg(file);
     const data = await concatFile.concatFile(options);
-    const outputPath = this.path.join(this._workDir, options.output);
+    const outputPath = this.path.join(options.workDir, options.output);
     await mkdir(outputPath);  // 检查发布目录是否存在
     await writeFile(outputPath, data);
-    info(`更新「${options.output}」`);
   }
 
-  private findPkg(file: string): ConcatOptions {
-    let options;
-    Object.keys(this._concatFileConfig.pkg).find(key => {
-      const value = this._concatFileConfig.pkg[key];
+  private async findPkg(file: string): Promise<ConcatOptions> {
+    let options = this._pkgCatcher.get(file);
+    if(options){
+      return options;
+    }
+    const workDir = getWorkDirByFile(file);
+    const { config } = await findConfigFile(workDir);
+    Object.keys(config.pkg).find(key => {
+      const value = config.pkg[key];
       return value.some(item => {
-        const fullPath = this.path.resolve(this._workDir, item);
+        const fullPath = this.path.resolve(workDir, item);
         options = {
           output: key,
-          inputs: value
+          inputs: value,
+          workDir: ""
         };
         return fullPath === file;
       });
     });
-    options._workDir = this._workDir;
+    options.workDir = workDir;
+    this._pkgCatcher.set(file, options);
     return options;
   }
 
-  public stop() {
+  public close(){
+    this._fsWatcher.close();
+    this._watchers.clear();
+    this._pkgCatcher.clear();
+  }
+
+  public stop(path: string) {
     if (this._watchers.size === 0) {
       warning("watch未开始！");
       return;
     }
-    this._fsWatcher.close();
+    if (this._watchers.has(path)) {
+      this._fsWatcher.unwatch(path);
+      this._watchers.delete(path);
+    }
   }
 }
 
-class WatcherViewProvider implements vscode.WebviewViewProvider {
+class WatcherViewProvider extends Base implements vscode.WebviewViewProvider {
 
   public static readonly viewType = 'efeswatcher.configWatcher';
 
@@ -127,7 +196,10 @@ class WatcherViewProvider implements vscode.WebviewViewProvider {
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
-  ) { }
+    private readonly _watcher?: Watcher
+  ) {
+    super();
+  }
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
@@ -139,7 +211,6 @@ class WatcherViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.options = {
       // Allow scripts in the webview
       enableScripts: true,
-
       localResourceRoots: [
         this._extensionUri
       ]
@@ -148,30 +219,35 @@ class WatcherViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
     webviewView.webview.onDidReceiveMessage(data => {
-      info("1");
+      info(JSON.stringify(data));
       switch (data.type) {
-        case 'stopWatcher':
+        case "stopWatcher":
           {
-            info("stopwa");
+            this._watcher.stop(data.data);
             break;
           }
       }
     });
   }
 
-  public addWatcher(newWatcher: IWatcherOptions){
-    if(this._view){
+  public get ready() {
+    return !!this._view;
+  }
+
+  public addWatcher(newWatcher: IWatcherOptions) {
+    newWatcher.name = this.path.parse(newWatcher.workDir).name;
+    if (this._view) {
       this._view.show?.(true);
       this._view.webview.postMessage({
         type: "addWatcher",
-        data: JSON.stringify(newWatcher)
+        data: newWatcher
       });
     }
   }
 
-  public updateWatcher(watchers: IterableIterator<IWatcherOptions>){
+  public updateWatcher(watchers: IterableIterator<IWatcherOptions>) {
     const watcherArray = Array.from(watchers);
-    if(this._view){
+    if (this._view) {
       this._view.webview.postMessage({
         type: "updateWatcher",
         data: watcherArray
@@ -186,8 +262,8 @@ class WatcherViewProvider implements vscode.WebviewViewProvider {
   }
 
   private _getNonce(): string {
-    let text = '';
-    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let text = "";
+    const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     for (let i = 0; i < 32; i++) {
       text += possible.charAt(Math.floor(Math.random() * possible.length));
     }
@@ -227,13 +303,7 @@ class WatcherViewProvider implements vscode.WebviewViewProvider {
 			</head>
       <body>
         <div id="message" class="watcher-path"></div>
-        <ul class="watcher-list">
-          <li class="watcher-entry">
-            <span class="watcher-input" alt="/Users/zhangyongjie/Desktop/work/project/">
-              cookies
-            </span>
-            <button id="btn" class="watcher-btn" alt="click to stop watching">stop</button>
-          </li>
+        <ul id="watcher-list" class="watcher-list">
         </ul>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
