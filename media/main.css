@@ -11,24 +11,39 @@ body {
 .watcher-entry {
 	width: 100%;
 	display: flex;
+	flex-wrap: wrap;
 	margin-bottom: 0.2em;
 	border: 1px solid var(--vscode-input-border);
 }
 
-.watcher-btn {
-	width: 2.5em;
+.watcher-btn-stop {
 	height: 2em;
+	width: 50%;
+	border-right: 1px solid black;
 }
 
+.watcher-btn-publish {
+	height: 2em;
+	width: 50%;
+}
+
+
 .watcher-input {
-	display: inline-block;
-	flex: 1;
+	text-align: center;
+	flex-grow: 1;
+	flex-shrink: 0;
+	flex-basis: 100%;
 	width: 100%;
 	overflow-x: scroll;
 	color: var(--vscode-input-foreground);
 	background-color: var(--vscode-input-background);
 	border: none;
 	padding: 0 0.2em;
+}
+
+.watcher-input:hover{
+	background-color: var(--vscode-button-hoverBackground);
+	cursor: pointer;
 }
 
 .watcher-path{

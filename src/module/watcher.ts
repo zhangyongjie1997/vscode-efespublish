@@ -7,6 +7,7 @@ import { error, info, warning } from "../utils/utils";
 import { rCssFile, rHtmlFile, rImageFile, rJsFile, rLessFile } from "../utils/fileRegExps";
 import { ConcatFile } from "../utils/concatFile";
 import { ImageMinier } from "../utils/imageMinify";
+import { Publisher } from "./publisher";
 
 interface IWatcherOptions {
   path: string;
@@ -24,8 +25,10 @@ function updateInfo(target, property, descriptor){
   descriptor.value = async function (file){
     try {
       await func.call(this, file);
-    } catch (error) {}
-    info(`更新「${path.basename(file)}」`);
+      info(`更新「${path.basename(file)}」`);
+    } catch (error) {
+      warning(`更新「${path.basename(file)}」失败`);
+    }
   };
 }
 
@@ -70,7 +73,6 @@ class Watcher extends Base {
       concatFileConfig: concatFileConfig
     };
     this._watchers.set(_watchPath, newWatcher);
-    const watched = this._fsWatcher.getWatched();
     return newWatcher;
   }
 
@@ -86,11 +88,11 @@ class Watcher extends Base {
   private handleFileChange(file: string) {
     switch (true) {
       case rJsFile.test(file):
-        this.handleJsFileChange(file);
+        this.handleJsOrStyleFileChange(file);
         break;
       case rLessFile.test(file):
       case rCssFile.test(file):
-        this.handleStyleFileChange(file);
+        this.handleJsOrStyleFileChange(file);
         break;
       case rHtmlFile.test(file):
         this.handleHtmlFileChange(file);
@@ -99,7 +101,6 @@ class Watcher extends Base {
   }
 
   private async handleFileCreate(file: string) {
-    // TODO 处理新建文件
     switch (true){
       case rHtmlFile.test(file):
         this.handleHtmlFileChange(file);
@@ -121,7 +122,6 @@ class Watcher extends Base {
 
   @updateInfo
   private async handleHtmlFileChange(file: string){
-    // TODO 处理html文件
     const data = await concatFile.miniHtmlFile(file);
     const fileName = this.path.basename(file);
     const workDir = getWorkDirByFile(file);
@@ -129,7 +129,7 @@ class Watcher extends Base {
   }
 
   @updateInfo
-  private async handleJsFileChange(file: string) {
+  private async handleJsOrStyleFileChange(file: string) {
     const options = await this.findPkg(file);
     const data = await concatFile.concatFile(options);
     const outputPath = this.path.join(options.workDir, options.output);
@@ -137,14 +137,6 @@ class Watcher extends Base {
     await writeFile(outputPath, data);
   }
 
-  @updateInfo
-  private async handleStyleFileChange(file: string) {
-    const options = await this.findPkg(file);
-    const data = await concatFile.concatFile(options);
-    const outputPath = this.path.join(options.workDir, options.output);
-    await mkdir(outputPath);  // 检查发布目录是否存在
-    await writeFile(outputPath, data);
-  }
 
   private async findPkg(file: string): Promise<ConcatOptions> {
     let options = this._pkgCatcher.get(file);
@@ -219,13 +211,13 @@ class WatcherViewProvider extends Base implements vscode.WebviewViewProvider {
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
     webviewView.webview.onDidReceiveMessage(data => {
-      info(JSON.stringify(data));
       switch (data.type) {
         case "stopWatcher":
-          {
-            this._watcher.stop(data.data);
-            break;
-          }
+          this._watcher.stop(data.data);
+          break;
+        case "publish":
+          this._publish(data.data);
+          break;
       }
     });
   }
@@ -245,7 +237,12 @@ class WatcherViewProvider extends Base implements vscode.WebviewViewProvider {
     }
   }
 
-  public updateWatcher(watchers: IterableIterator<IWatcherOptions>) {
+  private _publish(workDir){
+    const publisher = new Publisher();
+    publisher.publish(workDir);
+  }
+
+  private _updateWatcher(watchers: IterableIterator<IWatcherOptions>) {
     const watcherArray = Array.from(watchers);
     if (this._view) {
       this._view.webview.postMessage({

@@ -9,7 +9,7 @@ export const mkdir = async (url: string) => {
   return new Promise(resolve => {
     const pathData = path.parse(url);
     console.info("mkdir:" + pathData.dir);
-    if(!fs.existsSync(pathData.dir)){
+    if (!fs.existsSync(pathData.dir)) {
       fs.mkdir(pathData.dir, () => {
         resolve(1);
       });
@@ -22,7 +22,7 @@ export const findHtmlFiles = (sourcePath: string): string[] => {
   const dir = fs.readdirSync(sourcePath);
   const htmlFilePaths: string[] = [];
   dir.forEach(item => {
-    if(rHtmlFile.test(item)){
+    if (rHtmlFile.test(item)) {
       htmlFilePaths.push(path.join(sourcePath, "/", item));
     }
   });
@@ -30,13 +30,13 @@ export const findHtmlFiles = (sourcePath: string): string[] => {
 };
 
 export const findImageFiles = (sourcePath: string): string[] => {
-  if(!fs.existsSync(sourcePath)) {
+  if (!fs.existsSync(sourcePath)) {
     return null;
   }
   const dir = fs.readdirSync(sourcePath);
   const imageFilePaths: string[] = [];
   dir.forEach(item => {
-    if(rImageFile.test(item)){
+    if (rImageFile.test(item)) {
       imageFilePaths.push(path.resolve(sourcePath, item));
     }
   });
@@ -60,34 +60,34 @@ const find = (baseUrl: string): {
 } => {
   const filePath = path.join(baseUrl, "/", CONFIG_FILE_NAME);
   const exits = fs.existsSync(filePath);
-  if(exits){
+  if (exits) {
     let fileData = fs.readFileSync(filePath, "utf8"), configData: AnyObject = {};
-    if(fileData){
+    if (fileData) {
       try {
         configData = JSON.parse(fileData);
       } catch (error) { configData = {}; }
     }
-    return {config: configData, configFilePath: filePath};
+    return { config: configData, configFilePath: filePath };
   }
   return {};
 };
 
 /**
  * 
- * @param basePath 开始查找的目录
+ * @param {string} basePath 开始查找的目录
  */
 export const findConfigFile = async (basePath: string): Promise<{
   config?: ConfigData,
   configFilePath?: string
-}>  => {
+}> => {
   return find(basePath);
 };
 
 
 export const getWorkDir = (document?: TextDocument): string => {
-  if(document){
+  if (document) {
     return path.parse(document.fileName).dir;
-  }else{
+  } else {
     error("请打开配置文件后执行命令！");
     return "";
   }
@@ -98,30 +98,30 @@ export const getWorkDir = (document?: TextDocument): string => {
  * @param {string} file
  */
 export const getWorkDirByFile = (file) => {
-  let dir = path.parse(file).dir, 
-    lastDir = "", 
-    deep = 0, 
+  let dir = path.parse(file).dir,
+    lastDir = "",
+    deep = 0,
     maxDeep = 5,
     concatConfigFileName = "concatfile.json",
     res = "";
 
-  loop: while(dir !== lastDir) {
+  loop: while (dir !== lastDir) {
     lastDir = dir;
-    if(deep > maxDeep) {
+    if (deep > maxDeep) {
       break loop;
     }
     const dirInfo = fs.readdirSync(dir);
     const found = dirInfo.find(item => {
-      if(item === concatConfigFileName){
+      if (item === concatConfigFileName) {
         const state = fs.statSync(path.join(dir, item));
-        if(state.isFile){
+        if (state.isFile) {
           res = dir;
           return true;
         }
       }
     });
 
-    if(found) {
+    if (found) {
       return res;
     }
 

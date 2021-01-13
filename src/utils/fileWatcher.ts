@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import {Base} from "./base";
-import {FSWatcher} from "chokidar";
+import { Base } from "./base";
+import { FSWatcher } from "chokidar";
 
 type Listeners = Array<Function>;
 
@@ -16,15 +16,15 @@ class FileWatcher extends Base {
   private srcs: string[] = [];
   private events: Map<EVENT_TYPES, Function> = new Map<EVENT_TYPES, Function>();
 
-  constructor(src = ""){
+  constructor(src = "") {
     super();
-    if(src){
+    if (src) {
       this.srcs.push(src);
       this.watch(src);
     }
   }
 
-  on(event: EVENT_TYPES, listener: Function){
+  on(event: EVENT_TYPES, listener: Function) {
     this.events.set(event, listener);
   }
 
@@ -39,13 +39,13 @@ class FileWatcher extends Base {
     this.srcs = [];
     this.events.clear();
   }
-  
-  private watch(src: string): Function{
-    if(!this.fs.existsSync(src)){
+
+  private watch(src: string): Function {
+    if (!this.fs.existsSync(src)) {
       return;
     }
     let listeners: Listeners = [];
-    if(this.watchers.has(src)){
+    if (this.watchers.has(src)) {
       listeners = this.watchers.get(src);
     }
     this.fs.watch(src, (event: string, filename: string) => {
@@ -53,7 +53,7 @@ class FileWatcher extends Base {
     });
     this.watchers.set(src, listeners);
   }
-  onchange(event: string, filename: string){
+  onchange(event: string, filename: string) {
     console.log(event, filename);
   }
 }
@@ -62,4 +62,4 @@ function Watch(src): FileWatcher {
   return new FileWatcher(src);
 }
 
-export {Watch};
+export { Watch };

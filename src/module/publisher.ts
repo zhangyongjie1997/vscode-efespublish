@@ -22,10 +22,10 @@ class Publisher{
   private concatFileConfig: AnyObject = null;
   private topResolve: Function = null;
 
-  public publish(){
+  public publish(workDir?: string){
     this.startTime = Date.now();
     this.totalFileLength = 2;
-    this.workDir = getWorkDir(vscode.window.activeTextEditor?.document);
+    this.workDir = workDir || getWorkDir(vscode.window.activeTextEditor?.document);
     if(!this.workDir){
       return this.publishing = false;
     }
@@ -37,14 +37,13 @@ class Publisher{
     //进度条
     window.withProgress({
       location: vscode.ProgressLocation.Notification,
-      title: "publishing!",
+      title: "publishing",
       cancellable: true
     }, this.handleProgress.bind(this));
   }
 
   private handleProgress (progress: vscode.Progress<ProgressMessage>, cancellation: vscode.CancellationToken){
     cancellation.onCancellationRequested(this.handleCancel);
-    let currentProgress = 0;  // html, image
     this.incrementProgress(progress, 0, "正在查找配置文件。。。");
     
     return new Promise(async topResolve => {

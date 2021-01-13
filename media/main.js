@@ -34,14 +34,12 @@
   watcherList.addEventListener("click", function(e /** @type {Event} */) {
     const target = e.target;
     switch (true){
-      case target.classList.contains("watcher-btn"): {
+      case target.classList.contains("watcher-btn-stop"):
         onWatcherStopClick(target);
         break;
-      }
-      case target.classList.contains("watcher-input"): {
-        
+      case target.classList.contains("watcher-btn-publish"):
+        onWatcherPublishClick(target);
         break;
-      }
     }
   });
 
@@ -51,18 +49,25 @@
    */
   function createWatcherItem(watcher) {
     const li = document.createElement("li");
-    const span = document.createElement("span");
+    const div = document.createElement("div");
     const button = document.createElement("button");
+    const button2 = document.createElement("button");
     li.classList.add("watcher-entry");
-    span.classList.add("watcher-input");
-    span.dataset.path = watcher.path;
-    span.innerText = watcher.name;
-    span.dataset.path = watcher.path;
+    div.classList.add("watcher-input");
+    div.dataset.path = watcher.path;
+    div.innerText = watcher.name;
+    div.dataset.path = watcher.path;
     button.classList.add("watcher-btn");
+    button.classList.add("watcher-btn-stop");
     button.innerText = "stop";
     button.dataset.path = watcher.path;
-    li.appendChild(span);
+    button2.classList.add("watcher-btn");
+    button2.classList.add("watcher-btn-publish");
+    button2.innerText = "publish";
+    button2.dataset.workdir = watcher.workDir;
+    li.appendChild(div);
     li.appendChild(button);
+    li.appendChild(button2);
     return li;
   }
 
@@ -73,6 +78,15 @@
     const path = target.dataset.path;
     vscode.postMessage({type: "stopWatcher", data: path});
     target.parentElement.remove();
+  }
+
+  /**
+   * 
+   * @param {HTMLButtonElement} target 
+   */
+  function onWatcherPublishClick(target){
+    const workDir = target.dataset.workdir;
+    vscode.postMessage({type: "publish", data: workDir});
   }
 
   /**

@@ -22,7 +22,9 @@ export const activate = (context: vscode.ExtensionContext) => {
 
 
 	context.subscriptions.push(
-		vscode.window.registerWebviewViewProvider(WatcherViewProvider.viewType, provider));
+		vscode.window.registerWebviewViewProvider(WatcherViewProvider.viewType, provider, {
+			webviewOptions: {retainContextWhenHidden: true}
+		}));
 
 	// 注册textEditor可以直接获取当前编辑器
 	context.subscriptions.push(vscode.commands.registerCommand('efespublish.publish', () => {
