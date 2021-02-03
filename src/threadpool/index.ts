@@ -227,9 +227,9 @@ class ThreadPool {
       // 还有任务则通知子线程处理，否则修改子线程状态为空闲
       if (this.workQueue.length) {
         console.log('还有任务要处理');
-        const work = this.workQueue.shift();
+        const nextwork = this.workQueue.shift();
         // 从任务队列拿到一个任务交给子线程
-        work && this.submitWorkToThread(thread, userWork, work);
+        nextwork && this.submitWorkToThread(thread, userWork, nextwork);
       } else {
         thread.setState(THREAD_STATE.IDLE);
       }
@@ -246,7 +246,9 @@ class ThreadPool {
             if (EventEmitter.listenerCount(userWork, 'error')) { // 如果存在error事件的监听者
               userWork.emit('error', error);
             }
-          } catch (error) {}
+          } catch (e) {
+            console.log(e);
+          }
           break;
         default: break;
       }
@@ -279,112 +281,109 @@ class ThreadPool {
    * 主要处理的逻辑包括，根据当前的策略判断是否需要新建线程、选择线程处理任务、排队任务等，
    * 如果任务数得到阈值，则根据丢弃策略处理该任务。
    */
-  submit(fileName: string, options = {}): Promise<UserWork> {
-    return new Promise(async (resolve, reject) => {
-      let thread: Thread;
-      // 当前如果有线程
-      if (this.threadQueue.length) {
-        thread = this.selectThead();
-        // 如果当前线程忙碌
-        if (thread.state === THREAD_STATE.BUSY) {
-          // console.log("选择的线程忙碌");
-          // 子线程数量没有超过默认核心线程数，就继续创建
-          if (this.threadQueue.length < this.coreThreads) {
-            // console.log("子线程数量没有超过默认核心线程数，就继续创建");
+  async submit(fileName: string, options = {}): Promise<UserWork> {
+    let thread: Thread;
+    // 当前如果有线程
+    if (this.threadQueue.length) {
+      thread = this.selectThead();
+      // 如果当前线程忙碌
+      if (thread.state === THREAD_STATE.BUSY) {
+        // console.log("选择的线程忙碌");
+        // 子线程数量没有超过默认核心线程数，就继续创建
+        if (this.threadQueue.length < this.coreThreads) {
+          // console.log("子线程数量没有超过默认核心线程数，就继续创建");
+          thread = this.newThread();
+        } else if (this.totalWork + 1 > this.maxWork) {
+          // console.log("总任务数已达到阈值，还没有达到线程数阈值，则创建");
+          // 总任务数已达到阈值，还没有达到线程数阈值，则创建
+          if (this.threadQueue.length < this.maxThreads) {
             thread = this.newThread();
-          } else if (this.totalWork + 1 > this.maxWork) {
-            // console.log("总任务数已达到阈值，还没有达到线程数阈值，则创建");
-            // 总任务数已达到阈值，还没有达到线程数阈值，则创建
-            if (this.threadQueue.length < this.maxThreads) {
-              thread = this.newThread();
-            } else {
-              // 处理溢出的任务
-              switch (this.discardPolicy) {
-                case DISCARD_POLICY.ABORT:
-                  return reject(new Error('任务队列已满/workQueue overflow'));
-                case DISCARD_POLICY.RUN_IN_MASTER:
-                  // 把任务交给主线程处理
-                  const workId = this.generateWorkId();
-                  const userWork = new UserWork(workId);
-                  userWork.terminate = () => {
-                    userWork.setState(WORK_STATE.CANCELED);
-                  };
-                  userWork.setTimeout(this.timeout); // 设置任务的超时时间
-                  resolve(userWork);
-                  try {
-                    let aFunction;
-                    if (isJSFile(fileName)) {
-                      aFunction = await import(fileName);
-                    } else {
-                      aFunction = vm.runInThisContext(`(${fileName})`);
-                    }
-                    if (!isFunction(aFunction)) {
-                      throw new TypeError(`work type error: expect js file or string, got ${typeof aFunction}`);
-                    }
-                    const result = await aFunction();
-                    setImmediate(() => { // 下一次事件循环时执行
-                      if (userWork.state !== WORK_STATE.CANCELED) {
-                        userWork.setState(WORK_STATE.END);
-                        userWork.emit('done', result);
-                      }
-                    });
-                  } catch (error) {
-                    setImmediate(() => {
-                      if (userWork.state !== WORK_STATE.CANCELED) {
-                        userWork.setState(WORK_STATE.END);
-                        userWork.emit('error', error.toString());
-                      }
-                    });
-                  }
-                  return;
-                case DISCARD_POLICY.OLDEST_DISCARD:
-                  const work = this.workQueue.shift(); // 取出最先进入队列的任务
-                  // maxWork为1时， work会为空
-                  if (work && this.userWorkPool.get(work.workId)) { // 如果当前任务在执行
-                    this.cancelWork(this.userWorkPool.get(work.workId)!);
+          } else {
+            // 处理溢出的任务
+            switch (this.discardPolicy) {
+              case DISCARD_POLICY.ABORT:
+                throw new Error('任务队列已满/workQueue overflow');
+              case DISCARD_POLICY.RUN_IN_MASTER:
+                // 把任务交给主线程处理
+                const workId = this.generateWorkId();
+                const userWork = new UserWork(workId);
+                userWork.terminate = () => {
+                  userWork.setState(WORK_STATE.CANCELED);
+                };
+                userWork.setTimeout(this.timeout); // 设置任务的超时时间
+                try {
+                  let aFunction;
+                  if (isJSFile(fileName)) {
+                    aFunction = await import(fileName);
                   } else {
-                    return reject(new Error('no work can be discarded'));
+                    aFunction = vm.runInThisContext(`(${fileName})`);
                   }
-                  break;
-                case DISCARD_POLICY.DISCARD:
-                  return reject(new Error('discard!'));
-                case DISCARD_POLICY.NOT_DISCARD:
-                  break;
-                default:
-                  break;
-              }
+                  if (!isFunction(aFunction)) {
+                    throw new TypeError(`work type error: expect js file or string, got ${typeof aFunction}`);
+                  }
+                  const result = await aFunction();
+                  setImmediate(() => { // 下一次事件循环时执行
+                    if (userWork.state !== WORK_STATE.CANCELED) {
+                      userWork.setState(WORK_STATE.END);
+                      userWork.emit('done', result);
+                    }
+                  });
+                } catch (error) {
+                  setImmediate(() => {
+                    if (userWork.state !== WORK_STATE.CANCELED) {
+                      userWork.setState(WORK_STATE.END);
+                      userWork.emit('error', error.toString());
+                    }
+                  });
+                }
+                return userWork;
+              case DISCARD_POLICY.OLDEST_DISCARD:
+                const work = this.workQueue.shift(); // 取出最先进入队列的任务
+                // maxWork为1时， work会为空
+                if (work && this.userWorkPool.get(work.workId)) { // 如果当前任务在执行
+                  this.cancelWork(this.userWorkPool.get(work.workId)!);
+                } else {
+                  throw new Error('no work can be discarded');
+                }
+                break;
+              case DISCARD_POLICY.DISCARD:
+                throw new Error('discard!');
+              case DISCARD_POLICY.NOT_DISCARD:
+                break;
+              default:
+                break;
             }
           }
-          // console.log("这里干了蛇么");
         }
-      } else {
-        thread = this.newThread();
+        // console.log("这里干了蛇么");
       }
-      // 生成一个任务id
-      const workId = this.generateWorkId();
+    } else {
+      thread = this.newThread();
+    }
+    // 生成一个任务id
+    const workId = this.generateWorkId();
 
-      // 新建一个userWork
-      const userWork = new UserWork(workId);
-      this.timeout && userWork.setTimeout(this.timeout);
+    // 新建一个userWork
+    const userWork = new UserWork(workId);
+    this.timeout && userWork.setTimeout(this.timeout);
 
-      // 新建一个work
-      const work = new Work({ workId, fileName, options });
+    // 新建一个work
+    const work = new Work({ workId, fileName, options });
 
-      // 修改线程池结构把userWork和work关联起来
-      this.addWork(userWork);
+    // 修改线程池结构把userWork和work关联起来
+    this.addWork(userWork);
 
-      // 如果选中的线程正忙，先放到任务队列等待执行
-      if (thread.state === THREAD_STATE.BUSY) {
-        this.workQueue.push(work);
-        userWork.terminate = () => {
-          this.cancelWork(userWork);
-          this.workQueue = this.workQueue.filter((node) => node.workId !== work.workId);
-        };
-      } else {
-        this.submitWorkToThread(thread, userWork, work);
-      }
-      resolve(userWork);
-    });
+    // 如果选中的线程正忙，先放到任务队列等待执行
+    if (thread.state === THREAD_STATE.BUSY) {
+      this.workQueue.push(work);
+      userWork.terminate = () => {
+        this.cancelWork(userWork);
+        this.workQueue = this.workQueue.filter((node) => node.workId !== work.workId);
+      };
+    } else {
+      this.submitWorkToThread(thread, userWork, work);
+    }
+    return userWork;
   }
 
   /**

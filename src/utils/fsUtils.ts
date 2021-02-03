@@ -5,17 +5,14 @@ import { rHtmlFile, rImageFile } from './fileRegExps';
 import { error } from './utils';
 
 
+const CONFIG_FILE_NAME = 'concatfile.json';
+
 export const mkdir = async (url: string) => {
-  return new Promise((resolve) => {
-    const pathData = path.parse(url);
-    console.info(`mkdir:${ pathData.dir}`);
-    if (!fs.existsSync(pathData.dir)) {
-      fs.mkdir(pathData.dir, () => {
-        resolve(1);
-      });
-    }
-    resolve(1);
-  });
+  const pathData = path.parse(url);
+  // console.info(`mkdir:${ pathData.dir}`);
+  if (!fs.existsSync(pathData.dir)) {
+    await fs.promises.mkdir(pathData.dir);
+  }
 };
 
 export const findHtmlFiles = (sourcePath: string): string[] => {
@@ -43,23 +40,20 @@ export const findImageFiles = (sourcePath: string): string[] => {
   return imageFilePaths;
 };
 
-export const writeFile = (path: string, data: any): Promise<void> => {
-  console.log(`Writing file:${ path}`);
+export const writeFile = (filepath: string, data: any): Promise<void> => {
+  // console.log(`Writing file: ${filepath}`);
   return new Promise((resolve) => {
-    const writestream = fs.createWriteStream(path);
+    const writestream = fs.createWriteStream(filepath);
     writestream.write(data, () => {
       resolve();
     });
   });
 };
 
-const CONFIG_FILE_NAME = 'concatfile.json';
-
 const find = (baseUrl: string): {
   config: ConfigData;
   configFilePath: string;
 } => {
-
   const filePath = path.join(baseUrl, '/', CONFIG_FILE_NAME);
   const exits = fs.existsSync(filePath);
 
@@ -69,14 +63,14 @@ const find = (baseUrl: string): {
     if (fileData) {
       try {
         configData = JSON.parse(fileData);
-      } catch (error) { configData = {}; }
+      } catch (e) { configData = {}; }
     }
     return { config: configData, configFilePath: filePath };
   }
 
   return {
     config: {},
-    configFilePath: ""
+    configFilePath: '',
   };
 };
 
@@ -94,10 +88,9 @@ export const findConfigFile = async (basePath: string): Promise<{
 export const getWorkDir = (document?: TextDocument): string => {
   if (document) {
     return path.parse(document.fileName).dir;
-  } else {
-    error('请打开配置文件后执行命令！');
-    return '';
   }
+  error('请打开配置文件后执行命令！');
+  return '';
 };
 
 /**
@@ -108,31 +101,62 @@ export const getWorkDirByFile = (file) => {
   let { dir } = path.parse(file);
   let lastDir = '';
   let deep = 0;
+
   const maxDeep = 5;
   const concatConfigFileName = 'concatfile.json';
-  let res = '';
 
   while (dir !== lastDir) {
     lastDir = dir;
+
     if (deep > maxDeep) {
       break;
     }
+
     const dirInfo = fs.readdirSync(dir);
+
     const found = dirInfo.find((item) => {
-      if (item === concatConfigFileName) {
-        const state = fs.statSync(path.join(dir, item));
-        if (state.isFile()) {
-          res = dir;
-          return true;
-        }
+      if (
+        item === concatConfigFileName &&
+        fs.statSync(path.join(dir, item)).isFile()
+      ) {
+        return true;
       }
+      return false;
     });
 
     if (found) {
-      return res;
+      return dir;
     }
 
     deep++;
     dir = path.resolve(dir, '..');
   }
+};
+
+export const findPkgByFile = async (file: string): Promise<ConcatOptions> => {
+  let options = {
+    inputs: [],
+    workDir: '',
+    output: '',
+  };
+
+  const workDir = getWorkDirByFile(file)!;
+
+  const { config } = await findConfigFile(workDir);
+
+  Object.keys(config.pkg!).find((key) => {
+    const value = config.pkg![key];
+
+    return value.some((item) => {
+      const fullPath = path.resolve(workDir, item);
+      options = {
+        output: key,
+        inputs: value,
+        workDir,
+      };
+      return fullPath === file;
+    });
+  });
+
+  return options;
 };

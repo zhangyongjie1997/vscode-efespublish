@@ -27,7 +27,8 @@ class Publisher {
     this.totalFileLength = 2;
     this.workDir = workDir;
     if (!this.workDir) {
-      return this.publishing = false;
+      this.publishing = false;
+      return;
     }
     if (this.publishing) {
       warning('当前有任务正在进行！');
@@ -42,54 +43,62 @@ class Publisher {
     }, this.handleProgress.bind(this));
   }
 
-  private async handleProgress(progress: vscode.Progress<ProgressMessage>, cancellation: vscode.CancellationToken) {
+  handleCancel() {
+    this.publishing = false;
+    warning('publish canceled!');
+  }
+
+  private async handleProgress(
+    progress: vscode.Progress<ProgressMessage>,
+    cancellation: vscode.CancellationToken
+  ) {
     cancellation.onCancellationRequested(this.handleCancel);
     this.incrementProgress(progress, 0, '正在查找配置文件。。。');
 
     // return new Promise(async (topResolve) => {
-      // this.topResolve = topResolve;
+    // this.topResolve = topResolve;
 
-      const { config } = await findConfigFile(this.workDir);
+    const { config } = await findConfigFile(this.workDir);
 
-      this.concatFileConfig = config;
+    this.concatFileConfig = config;
 
-      if (!config?.pkg) {
-        error('请检查配置文件是否正确！');
-        this.publishing = false;
-        return;
-      }
-
-      this.incrementProgress(progress, 0, '发现配置文件，开始打包。。。');
-
-      const { pkg } = config;
-      this.totalFileLength += Object.keys(pkg).length;
-      const iterator = Aigle.resolve(pkg).forEachSeries(async (inputs, output) => {
-        const data = await concatFile.concatFile({
-          inputs,
-          output,
-          workDir: this.workDir,
-        });
-
-        const outputPath = path.join(this.workDir, output);
-
-        await mkdir(outputPath); // 检查发布目录是否存在
-
-        await writeFile(outputPath, data);
-
-        this.incrementProgress(progress, (1 / this.totalFileLength) * 100, `发布${path.basename(output)}`);
-        return null;
-
-        // const buf = Buffer.from(data);
-        // fs.writeFile(outputPath, buf, { encoding: "utf8" }, () => {
-        //   resolve();
-        // });
-      });
-      await iterator;
-      this.incrementProgress(progress, 0, '开始处理html, 图片文件。。。');
-      await this.handleHtmlFiles(progress);
-      this.incrementProgress(progress, 100, '');
-      info(`publish 完成，耗时${getSecond(Date.now() - this.startTime)}s!`);
+    if (!config?.pkg) {
+      error('请检查配置文件是否正确！');
       this.publishing = false;
+      return;
+    }
+
+    this.incrementProgress(progress, 0, '发现配置文件，开始打包。。。');
+
+    const { pkg } = config;
+    this.totalFileLength += Object.keys(pkg).length;
+    const iterator = Aigle.resolve(pkg).forEachSeries(async (inputs, output) => {
+      const data = await concatFile.concatFile({
+        inputs,
+        output,
+        workDir: this.workDir,
+      });
+
+      const outputPath = path.join(this.workDir, output);
+
+      await mkdir(outputPath); // 检查发布目录是否存在
+
+      await writeFile(outputPath, data);
+
+      this.incrementProgress(progress, (1 / this.totalFileLength) * 100, `发布${path.basename(output)}`);
+      return null;
+
+      // const buf = Buffer.from(data);
+      // fs.writeFile(outputPath, buf, { encoding: "utf8" }, () => {
+      //   resolve();
+      // });
+    });
+    await iterator;
+    this.incrementProgress(progress, 0, '开始处理html, 图片文件。。。');
+    await this.handleHtmlFiles(progress);
+    this.incrementProgress(progress, 100, '');
+    info(`publish 完成，耗时${getSecond(Date.now() - this.startTime)}s!`);
+    this.publishing = false;
     // });
   }
 
@@ -105,11 +114,10 @@ class Publisher {
 
     await iterator;
     this.incrementProgress(progress, 0, '开始压缩图片');
-    await this.handleImageFiles(progress);
-
+    await this.handleImageFiles();
   }
 
-  private async handleImageFiles(progress: vscode.Progress<ProgressMessage>) {
+  private async handleImageFiles() {
     const imageFileSrcs = findImageFiles(path.join(this.workDir, '/src/images'));
     if (!imageFileSrcs) {
       return 1;
@@ -126,10 +134,6 @@ class Publisher {
     return 1;
   }
 
-  handleCancel() {
-    this.publishing = false;
-    warning('publish canceled!');
-  }
 
   private incrementProgress(process: vscode.Progress<ProgressMessage>, step = 0, message = '') {
     process.report({

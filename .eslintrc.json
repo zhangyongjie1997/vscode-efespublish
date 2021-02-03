@@ -1,4 +1,5 @@
 {
+    "extends": "eslint-config-ali/typescript/node",
     "root": true,
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
@@ -11,35 +12,9 @@
     "rules": {
         "@typescript-eslint/quotes": ["error", "single", { "allowTemplateLiterals": true }],
         "@typescript-eslint/naming-convention": "warn",
-        "@typescript-eslint/semi": "never",
+        "@typescript-eslint/semi": 2,
         "curly": "warn",
         "no-throw-literal": "warn",
-        "quotes": "off",
-        "no-extra-bind": 2, // 禁止不必要的函数绑定
-        "no-const-assign": 2, // 禁止修改const声明的变量
-        "no-extra-parens": 2, // 禁止非必要的括号
-        "no-dupe-keys": 2, // 在创建对象字面量时不允许键重复 {a:1,a:1}
-        "no-else-return": 2, // 如果if语句里面有return,后面不能跟else语句
-        "no-empty": 2, // 块语句中的内容不能为空
-        "no-func-assign": 2, // 禁止重复的函数声明
-        "no-implicit-coercion": 1, // 禁止隐式转换
-        "no-inner-declarations": [2, "functions"], // 禁止在块语句中使用声明（变量或函数）
-        "no-irregular-whitespace": 2, // 不能有不规则的空格
-        "no-lone-blocks": 2, // 禁止不必要的嵌套块
-        "no-mixed-spaces-and-tabs": [2, false], // 禁止混用tab和空格
-        "no-multi-spaces": 2, // 不能用多余的空格
-        "no-multiple-empty-lines": [1, {"max": 2}], // 空行最多不能超过2行
-        "no-nested-ternary": 2, // 禁止使用嵌套的三目运算
-        "no-undef": 1, // 不能有未定义的变量
-        "no-unneeded-ternary": 2, // 禁止不必要的嵌套
-        "no-var": 2, // 禁用var，用let和const代替
-        "camelcase": 0, // 强制驼峰法命名
-        "comma-dangle": [2, "never"], // 对象字面量项尾不能有逗号
-        "comma-spacing": 2, // 逗号前后的空格
-        "eqeqeq": 2, // 必须使用全等
-        "key-spacing": [2, { "beforeColon": false, "afterColon": true }], // 对象字面量中冒号的前后空格
-        "semi": [2, "never"], // 语句强制分号结尾
-        "semi-spacing": [2, {"before": false, "after": true}], // 分号前后空格
-        "space-before-function-paren": [0, "always"] // 函数定义时括号前面要不要有空格
+        "quotes": "off"
     }
 }

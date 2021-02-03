@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-const request = require('request');
-const fs = require('fs');
-const path = require('path');
+import request from 'request';
+import fs from 'fs';
 
-const copy = async ({ src }) => {
-  const data = fs.readFileSync(src);
-};
+// const copy = async ({ src }) => {
+//   const data = fs.readFileSync(src);
+// };
 
 const mini = async ({ src }): Promise<string> => {
   const data = fs.readFileSync(src);
@@ -13,12 +12,12 @@ const mini = async ({ src }): Promise<string> => {
   if (!data) {
     return '';
   } else {
-    const res = await tinypng(data, src);
+    const res = await tinypng(data);
     return res;
   }
 };
 
-function tinypng(file: any, src): Promise<string> {
+function tinypng(file: any): Promise<string> {
   return new Promise((resolve) => {
     request({
       url: 'https://tinypng.com/web/shrink',
@@ -37,14 +36,12 @@ function tinypng(file: any, src): Promise<string> {
       },
       body: file,
     }, (error, response, body) => {
-      let results: any; let
-        filename;
+      let results: any;
       if (!error) {
-        filename = path.basename(src);
         results = JSON.parse(body);
         if (results.output && results.output.url) {
-          request.get({ url: results.output.url, encoding: null }, (err, res, body) => {
-            resolve(err ? file : Buffer.from(body));
+          request.get({ url: results.output.url, encoding: null }, (err, res, rsp) => {
+            resolve(err ? file : Buffer.from(rsp));
           });
         } else {
           resolve(file);
@@ -58,5 +55,5 @@ function tinypng(file: any, src): Promise<string> {
 
 export {
   mini,
-  copy,
+  // copy,
 };

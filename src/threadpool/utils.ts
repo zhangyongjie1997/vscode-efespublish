@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import * as fs from 'fs';
-
 const jsFileRegexp = /\.js$/;
 
 export const isFunction = (func: any): boolean => {

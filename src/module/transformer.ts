@@ -15,7 +15,9 @@ export const tranformer = (textEditor: vscode.TextEditor) => {
   const { selection } = textEditor;
 
   const { visibleTextEditors } = vscode.window;
-  const currentEditor = visibleTextEditors.find((editor) => editor.document.fileName === document.fileName);
+  const currentEditor = visibleTextEditors.find(
+    (editor) => editor.document.fileName === document.fileName
+  );
 
   const block = getTextBlock(document, selection);
 
@@ -38,7 +40,10 @@ export const tranformer = (textEditor: vscode.TextEditor) => {
 };
 
 
-async function applyTextBlockToEditor(block: TextBlock, editor: vscode.TextEditor): Promise<boolean> {
+async function applyTextBlockToEditor(
+  block: TextBlock,
+  editor: vscode.TextEditor
+): Promise<boolean> {
   return editor.edit((builder) => {
     builder.replace(block.range, block.content);
   });

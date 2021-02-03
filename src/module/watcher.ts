@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { FSWatcher } from 'chokidar';
 import { Base } from '@utils/base';
-import { findConfigFile, getWorkDir, mkdir, writeFile, getWorkDirByFile } from '@utils/fsUtils';
+import { findConfigFile, getWorkDir, mkdir, writeFile, getWorkDirByFile, findPkgByFile } from '@utils/fsUtils';
 import { error, info, warning } from '@utils/utils';
 import { rCssFile, rHtmlFile, rImageFile, rJsFile, rLessFile } from '@utils/fileRegExps';
 import { ConcatFile } from '@utils/concatFile';
@@ -49,7 +49,24 @@ class Watcher extends Base {
     });
   }
 
-  async watch(): Promise<IWatcherOptions | void> {
+  close() {
+    this._fsWatcher.close();
+    this._watchers.clear();
+    this._pkgCatcher.clear();
+  }
+
+  stop(filepath: string) {
+    if (this._watchers.size === 0) {
+      warning('watch未开始！');
+      return;
+    }
+    if (this._watchers.has(filepath)) {
+      this._fsWatcher.unwatch(filepath);
+      this._watchers.delete(filepath);
+    }
+  }
+
+  async watch(): Promise<IWatcherOptions | undefined> {
     const _workDir = getWorkDir(window.activeTextEditor?.document);
 
     const { config: concatFileConfig } = await findConfigFile(_workDir);
@@ -97,6 +114,7 @@ class Watcher extends Base {
       case rHtmlFile.test(file):
         this.handleHtmlFileChange(file);
         break;
+      default: break;
     }
   }
 
@@ -108,6 +126,7 @@ class Watcher extends Base {
       case rImageFile.test(file):
         this.handleImageFile(file);
         break;
+      default: break;
     }
   }
 
@@ -130,7 +149,13 @@ class Watcher extends Base {
 
   @updateInfo
   private async handleJsOrStyleFileChange(file: string) {
-    const options = await this.findPkg(file);
+    let options = this._pkgCatcher.get(file)!;
+
+    if (!options) {
+      options = await findPkgByFile(file);
+      this._pkgCatcher.set(file, options);
+    }
+
     const data = await concatFile.concatFile(options);
     const outputPath = this.path.join(options.workDir, options.output);
     await mkdir(outputPath); // 检查发布目录是否存在
@@ -143,17 +168,23 @@ class Watcher extends Base {
     let options = this._pkgCatcher.get(file)!;
     if (options) {
       return options;
-    }else{
-      options = {
-        inputs: [],
-        workDir: "",
-        output: ""
-      };
     }
+
+    options = {
+      inputs: [],
+      workDir: '',
+      output: '',
+    };
+
     const workDir = getWorkDirByFile(file)!;
+
+    options.workDir = workDir;
+
     const { config } = await findConfigFile(workDir);
+
     Object.keys(config.pkg!).find((key) => {
       const value = config.pkg![key];
+
       return value.some((item) => {
         const fullPath = this.path.resolve(workDir, item);
         options = {
@@ -164,26 +195,10 @@ class Watcher extends Base {
         return fullPath === file;
       });
     });
-    options.workDir = workDir;
+
+
     this._pkgCatcher.set(file, options);
     return options;
-  }
-
-  close() {
-    this._fsWatcher.close();
-    this._watchers.clear();
-    this._pkgCatcher.clear();
-  }
-
-  stop(path: string) {
-    if (this._watchers.size === 0) {
-      warning('watch未开始！');
-      return;
-    }
-    if (this._watchers.has(path)) {
-      this._fsWatcher.unwatch(path);
-      this._watchers.delete(path);
-    }
   }
 }
 
@@ -201,8 +216,8 @@ class WatcherViewProvider extends Base implements vscode.WebviewViewProvider {
 
   resolveWebviewView(
     webviewView: vscode.WebviewView,
-    context: vscode.WebviewViewResolveContext,
-    _token: vscode.CancellationToken,
+    // context: vscode.WebviewViewResolveContext,
+    // _token: vscode.CancellationToken,
   ) {
     this._view = webviewView;
 
@@ -224,6 +239,7 @@ class WatcherViewProvider extends Base implements vscode.WebviewViewProvider {
         case 'publish':
           this._publish(data.data);
           break;
+        default: break;
       }
     });
   }
@@ -234,12 +250,19 @@ class WatcherViewProvider extends Base implements vscode.WebviewViewProvider {
 
   addWatcher(newWatcher: IWatcherOptions) {
     newWatcher.name = this.path.parse(newWatcher.workDir).name;
+
     if (this._view) {
       this._view.show?.(true);
       this._view.webview.postMessage({
         type: 'addWatcher',
         data: newWatcher,
       });
+    }
+  }
+
+  clearWatcher() {
+    if (this._view) {
+      this._view.webview.postMessage({ type: 'clearWatcher' });
     }
   }
 
@@ -255,12 +278,6 @@ class WatcherViewProvider extends Base implements vscode.WebviewViewProvider {
         type: 'updateWatcher',
         data: watcherArray,
       });
-    }
-  }
-
-  clearWatcher() {
-    if (this._view) {
-      this._view.webview.postMessage({ type: 'clearWatcher' });
     }
   }
 
@@ -286,31 +303,31 @@ class WatcherViewProvider extends Base implements vscode.WebviewViewProvider {
     const nonce = this._getNonce();
 
     return `<!DOCTYPE html>
-			<html lang="en">
-			<head>
-				<meta charset="UTF-8">
+         <html lang="en">
+         <head>
+            <meta charset="UTF-8">
 
-				<!--
-					Use a content security policy to only allow loading images from https or from our extension directory,
-					and only allow scripts that have a specific nonce.
-				-->
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+            <!--
+               Use a content security policy to only allow loading images from https or from our extension directory,
+               and only allow scripts that have a specific nonce.
+            -->
+            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
 
-				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-				<link href="${styleResetUri}" rel="stylesheet">
-				<link href="${styleVSCodeUri}" rel="stylesheet">
-				<link href="${styleMainUri}" rel="stylesheet">
-				
-				<title>Watcher</title>
-			</head>
+            <link href="${styleResetUri}" rel="stylesheet">
+            <link href="${styleVSCodeUri}" rel="stylesheet">
+            <link href="${styleMainUri}" rel="stylesheet">
+            
+            <title>Watcher</title>
+         </head>
       <body>
         <div id="message" class="watcher-path"></div>
         <ul id="watcher-list" class="watcher-list">
         </ul>
-				<script nonce="${nonce}" src="${scriptUri}"></script>
-			</body>
-			</html>`;
+            <script nonce="${nonce}" src="${scriptUri}"></script>
+         </body>
+         </html>`;
   }
 }
 

@@ -1,10 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Base } from '@utils/base';
-import { FSWatcher } from 'chokidar';
 
 type Listeners = Function[];
-
-const fsWatcher = new FSWatcher();
 
 enum EVENT_TYPES {
   CHANGE = 'change',
@@ -40,7 +37,11 @@ class FileWatcher extends Base {
     this.events.clear();
   }
 
-  private watch(src: string): Function | void {
+  onchange(event: string, filename: string) {
+    console.log(event, filename);
+  }
+
+  private watch(src: string): Function {
     if (!this.fs.existsSync(src)) {
       return;
     }
@@ -52,9 +53,6 @@ class FileWatcher extends Base {
       this.onchange(event, filename);
     });
     this.watchers.set(src, listeners);
-  }
-  onchange(event: string, filename: string) {
-    console.log(event, filename);
   }
 }
 

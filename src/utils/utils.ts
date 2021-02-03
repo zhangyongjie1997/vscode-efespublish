@@ -15,7 +15,7 @@ export const info = (s: string) => {
 };
 
 export const hasKey = <T extends Object>(obj: T, key: keyof any): key is keyof T => {
-  return obj.hasOwnProperty(key);
+  return Object.prototype.hasOwnProperty.call(obj, key);
 };
 
 // 类型谓词的类型不可赋给其参数的类型。
@@ -27,6 +27,5 @@ export const hasKey = <T extends Object>(obj: T, key: keyof any): key is keyof T
 //             "string" 可赋给 "K" 类型的约束，但可以使用约束 "string | number | symbol" 的其他子类型实例化 "K"。ts(2677)
 
 export const getSecond = (m: number): string => {
-  console.log(m);
   return (m / 1000).toFixed(2).toString();
 };
