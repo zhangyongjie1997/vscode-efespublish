@@ -1,6 +1,3 @@
-"@ts-check";
-"use strict";
-
 const path = require("path");
 
 /** @type {import('webpack').Configuration} */
@@ -14,19 +11,27 @@ module.exports = {
     devtoolModuleFilenameTemplate: "../[resource-path]",
   },
   devtool: "source-map",
+  resolve: {
+    extensions: [".js", ".ts", "json"],
+    alias: {
+      "@utils": path.resolve(__dirname, "src/utils/"),
+    }
+  },
   externals: {
     vscode: "commonjs vscode",
-  },
-  resolve: {
-    extensions: [".js", ".ts", "json"]
+    fsevents: "require('fsevents')"
   },
   module: {
     rules: [
       {
         test: /\.ts$/,
-        exclude: /node_modules/,
+        // exclude: /node_modules/,
         use: [{
           loader: "ts-loader",
+          options: {
+            transpileOnly: true,
+            
+          }
         }]
       }
     ]

@@ -20,5 +20,5 @@ export default {
   /**
    * 任务超时时间
    */
-  TIMEOUT: 10 * 6000
+  TIMEOUT: 10 * 6000,
 };

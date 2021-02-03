@@ -1,26 +1,26 @@
 interface AnyObject {
-  [key: string]: any
+  [key: string]: any;
 }
 
 interface AnyFunc {
-  (...args: any): any
+  (...args: any): any;
 }
 
 type PkgItem = string;
 
 interface PkgData {
-  [key: string]: Array<PkgItem>
+  [key: string]: PkgItem[];
 }
 
 interface ConfigData {
-  pkg?: PkgData
-  [key: string]: any
+  pkg?: PkgData;
+  [key: string]: any;
 }
 
 interface ConcatOptions {
-  inputs: Array<PkgItem>
-  output: string
-  workDir: string
+  inputs: PkgItem[];
+  output: string;
+  workDir: string;
 }
 
 interface ProgressMessage {
@@ -28,7 +28,7 @@ interface ProgressMessage {
   message: string;
 }
 
-type UserWorkEvents = "done" | "error" | "timeout" | "cancel";
+type UserWorkEvents = 'done' | 'error' | 'timeout' | 'cancel';
 
 type WorkId = number;
 
@@ -60,6 +60,6 @@ interface ThreadPoolOptions {
  * 子线程抛出的消息
  */
 interface WorkerMessage {
-  event: import("./threadpool/constants").EVENT_TYPES;
+  event: import('./threadpool/constants').EVENT_TYPES;
   work?: Work;
 }

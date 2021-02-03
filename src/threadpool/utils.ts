@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import * as fs from "fs";
+import * as fs from 'fs';
+
 const jsFileRegexp = /\.js$/;
 
 export const isFunction = (func: any): boolean => {
@@ -18,13 +19,13 @@ export const isJSFile = (file: string): boolean => {
 export const splice = <T = any>(arr: T[], index: number): T | undefined | null => {
   const len = arr.length;
   const maxIndex = len - 1;
-  if(index > maxIndex || index < 0){
+  if (index > maxIndex || index < 0) {
     return null;
   }
-  if(index === maxIndex){
+  if (index === maxIndex) {
     return arr.pop();
   }
-  if(index === 0){
+  if (index === 0) {
     return arr.shift();
   }
   arr[index] = arr[maxIndex];

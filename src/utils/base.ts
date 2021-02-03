@@ -1,13 +1,13 @@
-import * as path from "path";
-import * as fs from "fs";
+import * as path from 'path';
+import * as fs from 'fs';
 
 class Base {
-  get fs(){
+  get fs() {
     return fs;
   }
-  get path(){
+  get path() {
     return path;
   }
 }
 
-export {Base};
+export { Base };

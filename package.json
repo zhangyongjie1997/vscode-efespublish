@@ -70,11 +70,14 @@
 			}
 		}
 	},
+	"_moduleAliases": {
+		"@utils": "out/utils"
+	},
 	"scripts": {
 		"attach": "node ./out/utils/imageMinify.js",
 		"vscode:prepublish": "npm run compile",
-		"webpack": "webpack --mode development",
-		"webpack-dev": "webpack --mode development --watch",
+		"webpack": "webpack --mode none",
+		"webpack-dev": "webpack --mode none --watch",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
 		"pretest": "npm run compile && npm run lint",
@@ -90,6 +93,7 @@
 		"clean-css": "^4.2.3",
 		"html-minifier": "^4.0.0",
 		"less": "^3.12.2",
+		"module-alias": "^2.2.2",
 		"request": "^2.88.2",
 		"terser": "^5.5.1"
 	},
@@ -98,12 +102,12 @@
 		"@types/babel__core": "^7.1.12",
 		"@types/babel__preset-env": "^7.9.1",
 		"@types/clean-css": "^4.2.2",
+		"@types/glob": "^7.1.3",
 		"@types/html-minifier": "^4.0.0",
 		"@types/less": "^3.0.2",
-		"@types/request": "^2.48.5",
-		"@types/glob": "^7.1.3",
 		"@types/mocha": "^8.0.0",
 		"@types/node": "^12.19.8",
+		"@types/request": "^2.48.5",
 		"@types/vscode": "^1.50.0",
 		"@typescript-eslint/eslint-plugin": "^4.1.1",
 		"@typescript-eslint/parser": "^4.1.1",

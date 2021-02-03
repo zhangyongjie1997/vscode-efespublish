@@ -1,17 +1,17 @@
-import { Worker } from "worker_threads";
-import * as os from "os";
-import * as path from "path";
-import { WORK_STATE, THREAD_STATE, DISCARD_POLICY, EVENT_TYPES } from "./constants";
-import config from "./config";
-import { Work } from "./work";
-import { isFunction, isJSFile, splice } from "./utils";
-import { EventEmitter } from "events";
-import * as vm from "vm";
+import { Worker } from 'worker_threads';
+import * as os from 'os';
+import * as path from 'path';
+import { WORK_STATE, THREAD_STATE, DISCARD_POLICY, EVENT_TYPES } from './constants';
+import config from './config';
+import { Work } from './work';
+import { isFunction, isJSFile, splice } from './utils';
+import { EventEmitter } from 'events';
+import * as vm from 'vm';
 
 /**
  * worker的代码目录
  */
-const workerPath = path.resolve(__dirname, "worker.js");
+const workerPath = path.resolve(__dirname, 'worker.js');
 
 /**
  * cpu支持的线程数
@@ -22,11 +22,10 @@ const cores = os.cpus().length;
 
 // 业务提交一个任务给线程池的时候，线程池会返回一个UserWork类，业务侧通过UserWork类和线程池通信。
 class UserWork extends EventEmitter {
-
   private timer: NodeJS.Timeout | null = null;
-  public workId: WorkId;
-  public state: WORK_STATE;
-  public terminate: AnyFunc = () => { };
+  workId: WorkId;
+  state: WORK_STATE;
+  terminate: AnyFunc = () => { };
   constructor(workId: WorkId) {
     super();
     this.workId = workId; // 任务Id
@@ -34,18 +33,18 @@ class UserWork extends EventEmitter {
     this.state = WORK_STATE.PENDDING; // 任务状态
   }
 
-  public emit(event: UserWorkEvents, data?, ...args): boolean{
+  emit(event: UserWorkEvents, data?, ...args): boolean {
     return super.emit(event, data);
   }
 
   // 设置任务的超时时间，超时取消任务
-  public setTimeout(timeout: number) {
+  setTimeout(timeout: number) {
     this.timer = setTimeout(() => {
-      this.timer && this.cancel() && this.emit("timeout");
+      this.timer && this.cancel() && this.emit('timeout');
     }, ~~timeout);
   }
 
-  public clearTimeout() {
+  clearTimeout() {
     if (this.timer) {
       clearTimeout(this.timer);
       this.timer = null;
@@ -53,7 +52,7 @@ class UserWork extends EventEmitter {
   }
 
   // 直接取消任务，如果任务执行完就不能取消了， this.terminate是动态设置的
-  public cancel() {
+  cancel() {
     if (this.state === WORK_STATE.END || this.state === WORK_STATE.CANCELED) {
       return false;
     } else {
@@ -62,7 +61,7 @@ class UserWork extends EventEmitter {
     }
   }
 
-  public setState(state: number) {
+  setState(state: number) {
     this.state = state;
   }
 }
@@ -72,9 +71,9 @@ class UserWork extends EventEmitter {
  * @param worker `Worker`实例
  */
 class Thread {
-  public worker: Worker;
-  public state: number;
-  public lastWorkTime: number;
+  worker: Worker;
+  state: number;
+  lastWorkTime: number;
   constructor(worker: Worker) {
     // nodejs的Worker对象，nodejs的worker_threads模块的Worker
     this.worker = worker;
@@ -85,12 +84,12 @@ class Thread {
   }
 
   // 修改线程状态
-  public setState(state: number) {
+  setState(state: number) {
     this.state = state;
   }
 
   // 修改线程最后工作时间
-  public setLastWorkTime(time: number) {
+  setLastWorkTime(time: number) {
     this.lastWorkTime = time;
   }
 }
@@ -108,7 +107,6 @@ const defaultThreadPoolOptions = {
 
 
 class ThreadPool {
-
   private options: AnyObject;
   /**
    * 子线程队列，保存所有已经创建的线程
@@ -164,29 +162,29 @@ class ThreadPool {
 
     this.threadQueue = [];
 
-    this.coreThreads = ~~(options.coreThreads) || config.CORE_THREADS;
+    this.coreThreads = ~~(options.coreThreads!) || config.CORE_THREADS;
 
     this.maxThreads = options.expansion !== false ? Math.max(this.coreThreads, config.MAX_THREADS) : this.coreThreads;
 
     this.discardPolicy = options.discardPolicy ? options.discardPolicy : DISCARD_POLICY.NOT_DISCARD;
-    
+
     this.preCreate = options.preCreate === true;
-    
-    this.maxIdleTime = ~~(options.maxIdleTime) || config.MAX_IDLE_TIME;
-    
+
+    this.maxIdleTime = ~~(options.maxIdleTime!) || config.MAX_IDLE_TIME;
+
     this.preCreate && this.preCreateThreads();
-    
+
     this.userWorkPool = new Map();
-    
+
     this.workId = 0;
-   
+
     this.workQueue = [];
-    
+
     this.totalWork = 0;
-   
-    this.maxWork = ~~(options.maxWork) || config.MAX_WORK;
-    
-    this.timeout = ~~(options.timeout);
+
+    this.maxWork = ~~(options.maxWork!) || config.MAX_WORK;
+
+    this.timeout = ~~(options.timeout!);
 
     this.pollIdle();
   }
@@ -199,25 +197,25 @@ class ThreadPool {
     const thread = new Thread(worker);
     // 添加到工作线程队列
     this.threadQueue.push(thread);
-    const threadId = worker.threadId;
-    worker.on("exit", () => {
+    const { threadId } = worker;
+    worker.on('exit', () => {
       // 找到该线程对应的数据结构，然后删除该线程的数据结构
       const position = this.threadQueue.findIndex(({ worker }) => {
         return worker.threadId === threadId;
       });
       const exitedThread = splice(this.threadQueue, position);
-      if(exitedThread){
+      if (exitedThread) {
         // 退出时状态是BUSY说明还在处理任务（非正常退出）
         this.totalWork -= (exitedThread.state === THREAD_STATE.BUSY ? 1 : 0);
       }
     });
-    worker.on("message", async (result: WorkerMessage) => {
+    worker.on('message', async (result: WorkerMessage) => {
       const { work, event } = result;
       const { data, error, workId } = work as Work;
       // 通过workId拿到对应的userWork
       const userWork = this.userWorkPool.get(workId);
       // 不存在说明任务被取消了
-      if(!userWork){
+      if (!userWork) {
         return;
       }
       // 修改线程池数据结构
@@ -228,7 +226,7 @@ class ThreadPool {
 
       // 还有任务则通知子线程处理，否则修改子线程状态为空闲
       if (this.workQueue.length) {
-        console.log("还有任务要处理");
+        console.log('还有任务要处理');
         const work = this.workQueue.shift();
         // 从任务队列拿到一个任务交给子线程
         work && this.submitWorkToThread(thread, userWork, work);
@@ -236,24 +234,24 @@ class ThreadPool {
         thread.setState(THREAD_STATE.IDLE);
       }
 
-      switch(event) {
+      switch (event) {
         case EVENT_TYPES.DONE:
           console.info(`userWork[${userWork.workId}] 完成任务`);
           // 通知用户，任务完成
-          userWork.emit("done", data);
+          userWork.emit('done', data);
           break;
         case EVENT_TYPES.ERROR:
           // 通知用户，任务出错
           try {
-            if (EventEmitter.listenerCount(userWork, 'error')) {  //如果存在error事件的监听者
-              userWork.emit("error", error);
+            if (EventEmitter.listenerCount(userWork, 'error')) { // 如果存在error事件的监听者
+              userWork.emit('error', error);
             }
           } catch (error) {}
           break;
         default: break;
       }
     });
-    worker.on("error", (...args: Array<any>) => {
+    worker.on('error', (...args: any[]) => {
       console.error(...args);
     });
 
@@ -266,8 +264,8 @@ class ThreadPool {
    * 如果没有可用线程则任务插入待处理队列等待处理。
    */
   selectThead(): Thread {
-    for(var i = 0; i < this.threadQueue.length; i++) {
-      if(this.threadQueue[i].state === THREAD_STATE.IDLE){
+    for (let i = 0; i < this.threadQueue.length; i++) {
+      if (this.threadQueue[i].state === THREAD_STATE.IDLE) {
         return this.threadQueue[i];
       }
     }
@@ -285,25 +283,25 @@ class ThreadPool {
     return new Promise(async (resolve, reject) => {
       let thread: Thread;
       // 当前如果有线程
-      if(this.threadQueue.length){
+      if (this.threadQueue.length) {
         thread = this.selectThead();
         // 如果当前线程忙碌
-        if(thread.state === THREAD_STATE.BUSY){
+        if (thread.state === THREAD_STATE.BUSY) {
           // console.log("选择的线程忙碌");
           // 子线程数量没有超过默认核心线程数，就继续创建
-          if(this.threadQueue.length < this.coreThreads){
+          if (this.threadQueue.length < this.coreThreads) {
             // console.log("子线程数量没有超过默认核心线程数，就继续创建");
             thread = this.newThread();
-          } else if(this.totalWork + 1 > this.maxWork){
+          } else if (this.totalWork + 1 > this.maxWork) {
             // console.log("总任务数已达到阈值，还没有达到线程数阈值，则创建");
             // 总任务数已达到阈值，还没有达到线程数阈值，则创建
-            if(this.threadQueue.length < this.maxThreads){
+            if (this.threadQueue.length < this.maxThreads) {
               thread = this.newThread();
             } else {
               // 处理溢出的任务
-              switch(this.discardPolicy){
+              switch (this.discardPolicy) {
                 case DISCARD_POLICY.ABORT:
-                  return reject(new Error("任务队列已满/workQueue overflow"));
+                  return reject(new Error('任务队列已满/workQueue overflow'));
                 case DISCARD_POLICY.RUN_IN_MASTER:
                   // 把任务交给主线程处理
                   const workId = this.generateWorkId();
@@ -311,45 +309,45 @@ class ThreadPool {
                   userWork.terminate = () => {
                     userWork.setState(WORK_STATE.CANCELED);
                   };
-                  userWork.setTimeout(this.timeout);  // 设置任务的超时时间
+                  userWork.setTimeout(this.timeout); // 设置任务的超时时间
                   resolve(userWork);
                   try {
                     let aFunction;
-                    if(isJSFile(fileName)){
+                    if (isJSFile(fileName)) {
                       aFunction = await import(fileName);
                     } else {
                       aFunction = vm.runInThisContext(`(${fileName})`);
                     }
-                    if(!isFunction(aFunction)){
+                    if (!isFunction(aFunction)) {
                       throw new TypeError(`work type error: expect js file or string, got ${typeof aFunction}`);
                     }
                     const result = await aFunction();
-                    setImmediate(() => {  // 下一次事件循环时执行
-                      if(userWork.state !== WORK_STATE.CANCELED){
+                    setImmediate(() => { // 下一次事件循环时执行
+                      if (userWork.state !== WORK_STATE.CANCELED) {
                         userWork.setState(WORK_STATE.END);
-                        userWork.emit("done", result);
+                        userWork.emit('done', result);
                       }
                     });
                   } catch (error) {
                     setImmediate(() => {
-                      if(userWork.state !== WORK_STATE.CANCELED){
+                      if (userWork.state !== WORK_STATE.CANCELED) {
                         userWork.setState(WORK_STATE.END);
-                        userWork.emit("error", error.toString());
+                        userWork.emit('error', error.toString());
                       }
                     });
                   }
                   return;
                 case DISCARD_POLICY.OLDEST_DISCARD:
-                  const work = this.workQueue.shift();  // 取出最先进入队列的任务
+                  const work = this.workQueue.shift(); // 取出最先进入队列的任务
                   // maxWork为1时， work会为空
-                  if(work && this.userWorkPool.get(work.workId)){ // 如果当前任务在执行
-                    this.cancelWork(this.userWorkPool.get(work.workId));
+                  if (work && this.userWorkPool.get(work.workId)) { // 如果当前任务在执行
+                    this.cancelWork(this.userWorkPool.get(work.workId)!);
                   } else {
-                    return reject(new Error("no work can be discarded"));
+                    return reject(new Error('no work can be discarded'));
                   }
                   break;
                 case DISCARD_POLICY.DISCARD:
-                  return reject(new Error("discard!"));
+                  return reject(new Error('discard!'));
                 case DISCARD_POLICY.NOT_DISCARD:
                   break;
                 default:
@@ -370,17 +368,17 @@ class ThreadPool {
       this.timeout && userWork.setTimeout(this.timeout);
 
       // 新建一个work
-      const work = new Work({workId, fileName, options});
+      const work = new Work({ workId, fileName, options });
 
       // 修改线程池结构把userWork和work关联起来
       this.addWork(userWork);
 
       // 如果选中的线程正忙，先放到任务队列等待执行
-      if(thread.state === THREAD_STATE.BUSY){
+      if (thread.state === THREAD_STATE.BUSY) {
         this.workQueue.push(work);
         userWork.terminate = () => {
           this.cancelWork(userWork);
-          this.workQueue = this.workQueue.filter(node => node.workId !== work.workId);
+          this.workQueue = this.workQueue.filter((node) => node.workId !== work.workId);
         };
       } else {
         this.submitWorkToThread(thread, userWork, work);
@@ -425,17 +423,17 @@ class ThreadPool {
     userWork.setState(WORK_STATE.END);
     userWork.clearTimeout();
   }
-  
+
 
   /**
    * 取消userWork
-   * @param userWork 
+   * @param userWork
    */
   cancelWork(userWork: UserWork): void {
     this.userWorkPool.delete(userWork.workId);
     this.totalWork--;
     userWork.setState(WORK_STATE.CANCELED);
-    userWork.emit("cancel");
+    userWork.emit('cancel');
   }
 
   /**
@@ -445,13 +443,13 @@ class ThreadPool {
     setTimeout(() => {
       // console.log(`当前线程数量${this.threadQueue.length}`);
       let i = 0;
-      while (i < this.threadQueue.length){
+      while (i < this.threadQueue.length) {
         const thread = this.threadQueue[i];
-        if(thread.state === THREAD_STATE.IDLE && ((Date.now() - thread.lastWorkTime) > this.maxIdleTime)){
+        if (thread.state === THREAD_STATE.IDLE && ((Date.now() - thread.lastWorkTime) > this.maxIdleTime)) {
           // console.log(`杀死空闲线程`);
           thread.worker.terminate();
           splice(this.threadQueue, i);
-        }else{
+        } else {
           i++;
         }
       }
@@ -470,8 +468,8 @@ class ThreadPool {
    * 预创建线程，数量默认=默认线程数
    */
   preCreateThreads(): void {
-    let coreThreads = this.coreThreads;
-    while (coreThreads--){
+    let { coreThreads } = this;
+    while (coreThreads--) {
       this.newThread();
     }
   }
@@ -480,13 +478,13 @@ class ThreadPool {
 /**
  * 线程数量等于cpu线程数
  */
-class CPUThreadPool extends ThreadPool{
-  constructor(options = defaultThreadPoolOptions){
+class CPUThreadPool extends ThreadPool {
+  constructor(options = defaultThreadPoolOptions) {
     super({
       ...options,
       // coreThreads: Math.floor(cores/2),
       coreThreads: 1,
-      expansion: false
+      expansion: false,
     });
   }
 }
@@ -496,7 +494,7 @@ class CPUThreadPool extends ThreadPool{
  */
 class SingleThreadPool extends ThreadPool {
   constructor(options = defaultThreadPoolOptions) {
-      super({...options, coreThreads: 1, expansion: false });
+    super({ ...options, coreThreads: 1, expansion: false });
   }
 }
 
@@ -505,7 +503,7 @@ class SingleThreadPool extends ThreadPool {
  */
 class FixedThreadPool extends ThreadPool {
   constructor(options = defaultThreadPoolOptions) {
-      super({ ...options, expansion: false });
+    super({ ...options, expansion: false });
   }
 }
 
@@ -518,7 +516,7 @@ export {
   CPUThreadPool,
   FixedThreadPool,
   SingleThreadPool,
-  // defaultThreadPool, 
+  // defaultThreadPool,
   defaultCpuThreadPool,
   // defaultFixedThreadPool,
   // defaultSingleThreadPool,

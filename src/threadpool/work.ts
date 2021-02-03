@@ -15,16 +15,16 @@ interface WorkArgs {
  * @class 任务类 一个任务对应一个id
  */
 export class Work implements Work {
-  public workId: WorkId;
-  public fileName: string = "";
-  public data = null;
-  public error = "";
-  public options: AnyObject = {};
-  constructor({workId, fileName, options}: WorkArgs){
+  workId: WorkId;
+  fileName = '';
+  data = null;
+  error = '';
+  options: AnyObject = {};
+  constructor({ workId, fileName, options }: WorkArgs) {
     this.workId = workId;
     this.fileName = fileName; // 任务逻辑，js文件路径
     this.data = null; // 任务返回的数据
-    this.error = ""; // 任务返回的错误
+    this.error = ''; // 任务返回的错误
     this.options = options;
   }
 }

@@ -1,6 +1,6 @@
-import { window } from "vscode";
+import { window } from 'vscode';
 
-const PRE_STRING = "vscode-efespublisher：";
+const PRE_STRING = 'vscode-efespublisher：';
 
 export const warning = (s: string) => {
   window.showWarningMessage(PRE_STRING + s);
@@ -28,5 +28,5 @@ export const hasKey = <T extends Object>(obj: T, key: keyof any): key is keyof T
 
 export const getSecond = (m: number): string => {
   console.log(m);
-  return (m/1000).toFixed(2).toString();
+  return (m / 1000).toFixed(2).toString();
 };

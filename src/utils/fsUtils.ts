@@ -1,14 +1,14 @@
-import * as fs from "fs";
-import * as path from "path";
-import { TextDocument } from "vscode";
-import { rHtmlFile, rImageFile } from "./fileRegExps";
-import { error } from "./utils";
+import * as fs from 'fs';
+import * as path from 'path';
+import { TextDocument } from 'vscode';
+import { rHtmlFile, rImageFile } from './fileRegExps';
+import { error } from './utils';
 
 
 export const mkdir = async (url: string) => {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const pathData = path.parse(url);
-    console.info("mkdir:" + pathData.dir);
+    console.info(`mkdir:${ pathData.dir}`);
     if (!fs.existsSync(pathData.dir)) {
       fs.mkdir(pathData.dir, () => {
         resolve(1);
@@ -21,9 +21,9 @@ export const mkdir = async (url: string) => {
 export const findHtmlFiles = (sourcePath: string): string[] => {
   const dir = fs.readdirSync(sourcePath);
   const htmlFilePaths: string[] = [];
-  dir.forEach(item => {
+  dir.forEach((item) => {
     if (rHtmlFile.test(item)) {
-      htmlFilePaths.push(path.join(sourcePath, "/", item));
+      htmlFilePaths.push(path.join(sourcePath, '/', item));
     }
   });
   return htmlFilePaths;
@@ -31,11 +31,11 @@ export const findHtmlFiles = (sourcePath: string): string[] => {
 
 export const findImageFiles = (sourcePath: string): string[] => {
   if (!fs.existsSync(sourcePath)) {
-    return null;
+    return [];
   }
   const dir = fs.readdirSync(sourcePath);
   const imageFilePaths: string[] = [];
-  dir.forEach(item => {
+  dir.forEach((item) => {
     if (rImageFile.test(item)) {
       imageFilePaths.push(path.resolve(sourcePath, item));
     }
@@ -44,8 +44,8 @@ export const findImageFiles = (sourcePath: string): string[] => {
 };
 
 export const writeFile = (path: string, data: any): Promise<void> => {
-  console.log("Writing file:" + path);
-  return new Promise(resolve => {
+  console.log(`Writing file:${ path}`);
+  return new Promise((resolve) => {
     const writestream = fs.createWriteStream(path);
     writestream.write(data, () => {
       resolve();
@@ -53,15 +53,19 @@ export const writeFile = (path: string, data: any): Promise<void> => {
   });
 };
 
-const CONFIG_FILE_NAME = "concatfile.json";
+const CONFIG_FILE_NAME = 'concatfile.json';
+
 const find = (baseUrl: string): {
-  config?: ConfigData,
-  configFilePath?: string
+  config: ConfigData;
+  configFilePath: string;
 } => {
-  const filePath = path.join(baseUrl, "/", CONFIG_FILE_NAME);
+
+  const filePath = path.join(baseUrl, '/', CONFIG_FILE_NAME);
   const exits = fs.existsSync(filePath);
+
   if (exits) {
-    let fileData = fs.readFileSync(filePath, "utf8"), configData: AnyObject = {};
+    const fileData = fs.readFileSync(filePath, 'utf8'); let
+      configData: AnyObject = {};
     if (fileData) {
       try {
         configData = JSON.parse(fileData);
@@ -69,16 +73,19 @@ const find = (baseUrl: string): {
     }
     return { config: configData, configFilePath: filePath };
   }
-  return {};
+
+  return {
+    config: {},
+    configFilePath: ""
+  };
 };
 
 /**
- * 
  * @param {string} basePath 开始查找的目录
  */
 export const findConfigFile = async (basePath: string): Promise<{
-  config?: ConfigData,
-  configFilePath?: string
+  config: ConfigData;
+  configFilePath: string;
 }> => {
   return find(basePath);
 };
@@ -88,8 +95,8 @@ export const getWorkDir = (document?: TextDocument): string => {
   if (document) {
     return path.parse(document.fileName).dir;
   } else {
-    error("请打开配置文件后执行命令！");
-    return "";
+    error('请打开配置文件后执行命令！');
+    return '';
   }
 };
 
@@ -98,23 +105,23 @@ export const getWorkDir = (document?: TextDocument): string => {
  * @param {string} file
  */
 export const getWorkDirByFile = (file) => {
-  let dir = path.parse(file).dir,
-    lastDir = "",
-    deep = 0,
-    maxDeep = 5,
-    concatConfigFileName = "concatfile.json",
-    res = "";
+  let { dir } = path.parse(file);
+  let lastDir = '';
+  let deep = 0;
+  const maxDeep = 5;
+  const concatConfigFileName = 'concatfile.json';
+  let res = '';
 
-  loop: while (dir !== lastDir) {
+  while (dir !== lastDir) {
     lastDir = dir;
     if (deep > maxDeep) {
-      break loop;
+      break;
     }
     const dirInfo = fs.readdirSync(dir);
-    const found = dirInfo.find(item => {
+    const found = dirInfo.find((item) => {
       if (item === concatConfigFileName) {
         const state = fs.statSync(path.join(dir, item));
-        if (state.isFile) {
+        if (state.isFile()) {
           res = dir;
           return true;
         }
@@ -126,6 +133,6 @@ export const getWorkDirByFile = (file) => {
     }
 
     deep++;
-    dir = path.resolve(dir, "..");
+    dir = path.resolve(dir, '..');
   }
 };

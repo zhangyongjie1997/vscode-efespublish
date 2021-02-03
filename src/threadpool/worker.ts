@@ -4,30 +4,30 @@
 // 任务支持js文件和字符串代码的形式。
 // 需要返回一个Promise或者async函数。用于用于通知主线程任务已经完成
 
-import { parentPort } from "worker_threads";
-import * as vm from "vm";
-import { isFunction, isJSFile } from "./utils";
-import { EVENT_TYPES } from "./constants";
+import { parentPort } from 'worker_threads';
+import * as vm from 'vm';
+import { isFunction, isJSFile } from './utils';
+import { EVENT_TYPES } from './constants';
 
-parentPort?.on("message", async (work: Work) => {
-  try{
-    const {fileName, options} = work;
+parentPort?.on('message', async (work: Work) => {
+  try {
+    const { fileName, options } = work;
     let aFunction: any;
-    if(isJSFile(fileName)){  // fileName可以是一段js代码或者js脚本的文件名
+    if (isJSFile(fileName)) { // fileName可以是一段js代码或者js脚本的文件名
       aFunction = await import(fileName);
     } else {
       aFunction = vm.runInThisContext(`(${fileName})`);
     }
-    if(!isFunction(aFunction)){
+    if (!isFunction(aFunction)) {
       throw new TypeError(`work type error: expect js file or string, got ${typeof aFunction}`);
     }
     console.log(`work[${work.workId}] start`);
     work.data = await aFunction(options);
     console.log(`work[${work.workId}] done`);
-    parentPort?.postMessage({event: EVENT_TYPES.DONE, work});
-  }catch(error){
+    parentPort?.postMessage({ event: EVENT_TYPES.DONE, work });
+  } catch (error) {
     work.error = error.toString();
-    parentPort?.postMessage({event: EVENT_TYPES.ERROR, work});
+    parentPort?.postMessage({ event: EVENT_TYPES.ERROR, work });
   }
 });
 
