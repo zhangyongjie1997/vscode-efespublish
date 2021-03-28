@@ -1,22 +1,13 @@
 import Aigle from 'aigle';
 import { minify } from 'terser';
-import CleanCss from 'clean-css';
 import less from 'less';
 import { minify as htmlMinify } from 'html-minifier';
 import { Base } from '@utils/base';
-
+import { transformCss } from './cleancss'
 import { warning, error } from '@utils/utils';
 import { rCssFile, rJsFile, rLessFile, rMinFile } from '../utils/fileRegExps';
 
 
-// const browsersList = [
-//   'defaults',
-//   'not ie < 11',
-//   'last 2 versions',
-//   '> 1%',
-//   'iOS 7',
-//   'last 3 iOS versions',
-// ];
 
 class ConcatFile extends Base {
   concatFile(options: ConcatOptions): Promise<string> {
@@ -83,15 +74,12 @@ class ConcatFile extends Base {
                 // fileString = cssData.css;
 
 
-                result = new CleanCss({
-                  rebase: false,
-                  compatibility: 'ie7',
-                }).minify(result).styles; // rebase false 不处理image路径
+                result = transformCss(result).styles || ''; // rebase false 不处理image路径
               } catch (e) {
                 return reject(e);
               }
 
-              data += fileString || '';
+              data += result || '';
 
               resolve(data);
             });

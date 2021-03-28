@@ -2,7 +2,7 @@
 	"name": "vscode-efespublish",
 	"displayName": "vscode-efespublish",
 	"description": "A pro version for efesjs's publish command",
-	"version": "0.0.23",
+	"version": "0.0.30",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/zhangyongjie1997/vscode-efespublish.git"
@@ -19,7 +19,8 @@
 		"onCommand:efespublish.transformjs",
 		"onCommand:efespublish.publish",
 		"onCommand:efespublish:watch",
-		"onCommand:efespublish.stopWatch"
+		"onCommand:efespublish.stopWatch",
+		"onCommand:autoprefixer.execute"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -33,6 +34,10 @@
 			]
 		},
 		"commands": [
+			{
+				"command": "efespublish.transformcss",
+				"title": "efes-publish:transformcss"
+			},
 			{
 				"command": "efespublish.transformjs",
 				"title": "efes-publish:transformjs"
@@ -74,8 +79,9 @@
 		"@utils": "out/utils"
 	},
 	"scripts": {
+		"build": "vsce package",
 		"attach": "node ./out/utils/imageMinify.js",
-		"vscode:prepublish": "npm run compile",
+		"vscode:build": "npm run compile",
 		"webpack": "webpack --mode none",
 		"webpack-dev": "webpack --mode none --watch",
 		"compile": "tsc -p ./",
@@ -88,12 +94,15 @@
 		"@babel/core": "^7.12.3",
 		"@babel/preset-env": "^7.12.1",
 		"aigle": "^1.14.1",
-		"autoprefixer": "^10.0.4",
+		"autoprefixer": "^10.2.5",
 		"chokidar": "^3.5.0",
 		"clean-css": "^4.2.3",
 		"html-minifier": "^4.0.0",
 		"less": "^3.12.2",
 		"module-alias": "^2.2.2",
+		"postcss": "^8.2.8",
+		"postcss-less": "^4.0.1",
+		"postcss-safe-parser": "^5.0.2",
 		"request": "^2.88.2",
 		"terser": "^5.5.1"
 	},

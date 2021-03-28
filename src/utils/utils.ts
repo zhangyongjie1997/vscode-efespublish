@@ -1,6 +1,7 @@
-import { window } from 'vscode';
+import { window, OutputChannel } from 'vscode';
 
 const PRE_STRING = 'vscode-efespublisher：';
+let output: OutputChannel
 
 export const warning = (s: string) => {
   window.showWarningMessage(PRE_STRING + s);
@@ -17,6 +18,22 @@ export const info = (s: string) => {
 export const hasKey = <T extends Object>(obj: T, key: keyof any): key is keyof T => {
   return Object.prototype.hasOwnProperty.call(obj, key);
 };
+
+/**
+ * Show message in iutput channel.
+ *
+ * @param {string} msg
+ */
+ export function showOutput(msg: string): void {
+	if (!output) {
+		output = window.createOutputChannel('efes-publish');
+	}
+
+	output.clear();
+	output.appendLine('[efes-publish]\n');
+	output.append(msg);
+	output.show();
+}
 
 // 类型谓词的类型不可赋给其参数的类型。
 //   不能将类型“keyof T”分配给类型“K”。

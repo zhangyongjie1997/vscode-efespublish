@@ -12,7 +12,7 @@
     "rules": {
         "@typescript-eslint/quotes": ["error", "single", { "allowTemplateLiterals": true }],
         "@typescript-eslint/naming-convention": "warn",
-        "@typescript-eslint/semi": 2,
+        "@typescript-eslint/semi": 4,
         "curly": "warn",
         "no-throw-literal": "warn",
         "quotes": "off"
