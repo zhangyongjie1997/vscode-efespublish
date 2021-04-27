@@ -127,7 +127,7 @@ class ConcatFile extends Base {
       }
     });
   }
-  miniHtmlFile(htmlFileSrc: string): Promise<string> {
+  miniHtmlFile(htmlFileSrc: string, mini: boolean = false): Promise<string> {
     const miniHtmlConfig = {
       removeComments: true,
       collapseWhitespace: true,
@@ -141,7 +141,7 @@ class ConcatFile extends Base {
           resultString = '/* 读取失败 */';
           error(`读取文件${htmlFileSrc}失败`);
         }
-        resultString = htmlMinify(resultString, miniHtmlConfig);
+        if(mini) resultString = htmlMinify(resultString, miniHtmlConfig);
         resolve(resultString);
       });
     });

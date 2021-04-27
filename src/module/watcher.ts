@@ -135,7 +135,7 @@ class Watcher extends Base {
     const workDir = getWorkDirByFile(file)!;
     const imageMinier = new ImageMinier();
     const outputPath = this.path.join(workDir, '/images/');
-    await mkdir(this.path.join(outputPath, '/temp.js'));
+    await mkdir(this.path.join(outputPath, '/__temp__.js'));
     await imageMinier.copy(file, outputPath);
   }
 

@@ -14,6 +14,8 @@ interface PkgData {
 
 interface ConfigData {
   pkg?: PkgData;
+  imgMin?: boolean;
+  htmlMin?: boolean;
   [key: string]: any;
 }
 
