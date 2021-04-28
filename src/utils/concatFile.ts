@@ -46,7 +46,7 @@ class ConcatFile extends Base {
               return resolve2(1);
             }
 
-            data += `\n/* SOURCE: ${src} */\n`;
+            data += `\n/* SOURCE: ${src.split('src')[1]} */\n`;
 
             this.fs.readFile(src, { encoding: 'utf8' }, async (err, fileString = '') => {
               let result = fileString;
@@ -81,7 +81,7 @@ class ConcatFile extends Base {
 
               data += result || '';
 
-              resolve(data);
+              resolve2(data);
             });
           });
         });
@@ -97,7 +97,7 @@ class ConcatFile extends Base {
             if (!src) {
               return resolve2(1);
             }
-            data += `\n/* SOURCE: ${src} */\n`;
+            data += `\n/* SOURCE: ${src.split('src')[1]} */\n`;
             // const readstream = fs.createReadStream(file, {encoding: "UTF8"});
             // readstream.on("data", (chunk) => {
             //   data += chunk;

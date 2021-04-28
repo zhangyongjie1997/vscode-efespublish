@@ -14,5 +14,8 @@ export const transformLess = async (css: string, src?: string) => {
 }
 
 export const transformCss = (css: string): Output => {
-    return (new CleanCss()).minify(css)
+    return (new CleanCss({
+        rebase: false,
+        compatibility: 'ie9',
+    })).minify(css)
 }
