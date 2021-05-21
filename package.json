@@ -76,7 +76,8 @@
 		}
 	},
 	"_moduleAliases": {
-		"@utils": "out/utils"
+		"@utils": "out/utils",
+		"@parser": "out/parser"
 	},
 	"scripts": {
 		"build": "vsce package",

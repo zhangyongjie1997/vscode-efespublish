@@ -2,12 +2,12 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { FSWatcher } from 'chokidar';
 import { Base } from '@utils/base';
-import { findConfigFile, getWorkDir, mkdir, writeFile, getWorkDirByFile, findPkgByFile } from '@utils/fsUtils';
-import { error, info, warning } from '@utils/utils';
-import { rCssFile, rHtmlFile, rImageFile, rJsFile, rLessFile } from '@utils/fileRegExps';
+import { Publisher } from './publisher';
 import { ConcatFile } from '@utils/concatFile';
 import { ImageMinier } from '@utils/imageMinify';
-import { Publisher } from './publisher';
+import { error, info, warning } from '@utils/utils';
+import { rCssFile, rHtmlFile, rImageFile, rJsFile, rLessFile } from '@utils/fileRegExps';
+import { findConfigFile, getWorkDir, mkdir, writeFile, getWorkDirByFile, findPkgByFile } from '@utils/fsUtils';
 
 interface IWatcherOptions {
   path: string;
@@ -36,7 +36,6 @@ class Watcher extends Base {
   private readonly _defaultWatchSrc = 'src';
   private readonly _pkgCatcher = new Map<string, ConcatOptions>();
   private _fsWatcher: FSWatcher = new FSWatcher();
-  private output: vscode.OutputChannel = window.createOutputChannel('efesWatcher');
   private _watchers = new Map<string, IWatcherOptions>();
 
   constructor() {

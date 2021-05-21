@@ -1,18 +1,18 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
-import Aigle from 'aigle';
-import { ConcatFile } from '@utils/concatFile';
-import { mkdir, findHtmlFiles, writeFile, findImageFiles, findConfigFile, getWorkDir } from '@utils/fsUtils';
-import { warning, error, info, getSecond } from '@utils/utils';
-import { ImageMinier } from '@utils/imageMinify';
 import fs from 'fs';
-const { window } = vscode;
-const concatFile = new ConcatFile();
+import Aigle from 'aigle';
+import * as path from 'path';
+import * as vscode from 'vscode';
+import output from '@utils/output';
+import { ConcatFile } from '@utils/concatFile';
+import { ImageMinier } from '@utils/imageMinify';
+import { warning, error, info, getSecond } from '@utils/utils';
+import { mkdir, findHtmlFiles, writeFile, findImageFiles, findConfigFile, getWorkDir } from '@utils/fsUtils';
 
-// process.on('uncaughtException', function(err) {
-//   publishing = false;
-//   console.log('Caught exception: ' + err);
-// });
+
+const { window } = vscode;
+
+
+const concatFile = new ConcatFile();
 
 class Publisher {
   private workDir = '';
@@ -20,7 +20,6 @@ class Publisher {
   private startTime = 0;
   private publishing = false;
   private concatFileConfig: ConfigData | undefined;
-  // private topResolve: Function = null;
 
   publish(workDir: string = getWorkDir(vscode.window.activeTextEditor?.document)) {
     this.startTime = Date.now();
@@ -55,8 +54,6 @@ class Publisher {
     cancellation.onCancellationRequested(this.handleCancel);
     this.incrementProgress(progress, 0, '正在查找配置文件。。。');
 
-    // return new Promise(async (topResolve) => {
-    // this.topResolve = topResolve;
     const config = await this.initConcatFileConfig()
 
     if (!config?.pkg) {
@@ -67,8 +64,12 @@ class Publisher {
 
     this.incrementProgress(progress, 0, '发现配置文件，开始打包。。。');
 
+    output.messageLine('concatFile.json文件内容：');
+    output.message(JSON.stringify(config));
+
     const { pkg } = config;
     this.totalFileLength += Object.keys(pkg).length;
+    
     const iterator = Aigle.resolve(pkg).forEachSeries(async (inputs, output) => {
       const data = await concatFile.concatFile({
         inputs,
@@ -84,15 +85,13 @@ class Publisher {
 
       this.incrementProgress(progress, (1 / this.totalFileLength) * 100, `发布${path.basename(output)}`);
       return null;
-
-      // const buf = Buffer.from(data);
-      // fs.writeFile(outputPath, buf, { encoding: "utf8" }, () => {
-      //   resolve();
-      // });
     });
+
     await iterator;
+
     this.incrementProgress(progress, 0, '开始处理html, 图片文件。。。');
     await this.handleHtmlFiles(progress);
+    
     this.incrementProgress(progress, 100, '');
     info(`publish 完成，耗时${getSecond(Date.now() - this.startTime)}s!`);
     this.publishing = false;

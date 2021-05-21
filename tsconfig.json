@@ -14,7 +14,8 @@
 		"rootDir": "src",
 		"baseUrl": "src",
 		"paths": {
-			"@utils/*": ["./utils/*"]
+			"@utils/*": ["./utils/*"],
+			"@parser/*": ["./parser/*"]
 		},
 		// "strict": true,   /* enable all strict type-checking options */
 		/* Additional Checks */

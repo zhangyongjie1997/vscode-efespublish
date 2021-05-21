@@ -1,11 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { TextDocument, window } from 'vscode';
-import { rHtmlFile, rImageFile } from './fileRegExps';
+import { TextDocument } from 'vscode';
 import { error } from './utils';
+import output from '@utils/output';
+import { rHtmlFile, rImageFile } from './fileRegExps';
 
 
 const CONFIG_FILE_NAME = 'concatfile.json';
+
+export type ReadFileResult = [object | Error | null, string]
 
 export const mkdir = async (url: string) => {
   const pathData = path.parse(url);
@@ -160,3 +163,14 @@ export const findPkgByFile = async (file: string): Promise<ConcatOptions> => {
 
   return options;
 };
+
+export const readFile = (file): Promise<ReadFileResult> => {
+  return new Promise(resolve => {
+    fs.readFile(file, { encoding: 'utf8' }, async (err, fileString = '') => {
+      if(err) {
+        output.errorLine(`读取文件：${file}`);
+      }
+      resolve([err, fileString]);
+    });
+  });
+}
