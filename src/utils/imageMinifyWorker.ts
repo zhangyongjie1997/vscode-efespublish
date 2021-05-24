@@ -32,7 +32,7 @@ function tinypng(file: any): Promise<string> {
         Host: 'tinypng.com',
         DNT: 1,
         Referer: 'https://tinypng.com/',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:42.0) Gecko/20100101 Firefox/42.0',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36',
       },
       body: file,
     }, (error, response, body) => {

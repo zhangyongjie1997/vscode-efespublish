@@ -61,12 +61,12 @@ const find = (baseUrl: string): {
   const exits = fs.existsSync(filePath);
 
   if (exits) {
-    const fileData = fs.readFileSync(filePath, 'utf8'); let
-      configData: AnyObject = {};
+    const fileData = fs.readFileSync(filePath, 'utf8');
+    let configData: AnyObject = {};
     if (fileData) {
       try {
         configData = JSON.parse(fileData);
-      } catch (e) { configData = {}; }
+      } catch (e) {}
     }
     return { config: configData, configFilePath: filePath };
   }
