@@ -1,7 +1,7 @@
 import { window, OutputChannel } from 'vscode';
 
 const PRE_STRING = 'vscode-efespublisher：';
-let output: OutputChannel
+let output: OutputChannel;
 
 export const warning = (s: string) => {
   window.showWarningMessage(PRE_STRING + s);
@@ -24,15 +24,15 @@ export const hasKey = <T extends Object>(obj: T, key: keyof any): key is keyof T
  *
  * @param {string} msg
  */
- export function showOutput(msg: string): void {
-	if (!output) {
-		output = window.createOutputChannel('efes-publish');
-	}
+export function showOutput(msg: string): void {
+  if (!output) {
+    output = window.createOutputChannel('efes-publish');
+  }
 
-	output.clear();
-	output.appendLine('[efes-publish]\n');
-	output.append(msg);
-	output.show();
+  output.clear();
+  output.appendLine('[efes-publish]\n');
+  output.append(msg);
+  output.show();
 }
 
 // 类型谓词的类型不可赋给其参数的类型。

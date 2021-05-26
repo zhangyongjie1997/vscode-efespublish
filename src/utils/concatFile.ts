@@ -5,10 +5,8 @@ import { parseAll as parseScript } from '@parser/script-parser';
 import { parse as parseHtml } from '@parser/html-parser';
 import { rCssFile, rJsFile } from '../utils/fileRegExps';
 
-
-
 class ConcatFile extends Base {
-  public async concatFile(options: ConcatOptions): Promise<string> {
+  async concatFile(options: ConcatOptions): Promise<string> {
     const wordDir = options.workDir;
 
     const { output } = options;
@@ -34,7 +32,7 @@ class ConcatFile extends Base {
       return _src;
     });
 
-    let data = ''
+    let data = '';
     switch (true) {
       case rCssFile.test(output):
         data = await parseStyle(srcs);
@@ -42,10 +40,11 @@ class ConcatFile extends Base {
       case rJsFile.test(output):
         data = await parseScript(srcs);
         break;
+      default: break;
     }
     return data;
   }
-  public async miniHtmlFile(src: string, mini: boolean = false): Promise<string> {
+  async miniHtmlFile(src: string, mini: boolean = false): Promise<string> {
     const result = await parseHtml(src, mini);
     return result;
   }

@@ -2,7 +2,7 @@
 	"name": "vscode-efespublish",
 	"displayName": "vscode-efespublish",
 	"description": "A pro version for efesjs's publish command",
-	"version": "0.1.0",
+	"version": "0.1.2",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/zhangyongjie1997/vscode-efespublish.git"
@@ -92,27 +92,26 @@
 		"test": "node ./out/test/runTest.js"
 	},
 	"dependencies": {
-		"@babel/core": "^7.12.3",
-		"@babel/preset-env": "^7.12.1",
+		"@babel/core": "^7.14.3",
+		"@babel/preset-env": "^7.14.2",
 		"aigle": "^1.14.1",
 		"autoprefixer": "^10.2.5",
-		"chokidar": "^3.5.0",
-		"clean-css": "^4.2.3",
+		"chokidar": "^3.5.1",
+		"clean-css": "^5.1.2",
 		"html-minifier": "^4.0.0",
-		"less": "^3.12.2",
+		"less": "^4.1.1",
 		"module-alias": "^2.2.2",
 		"postcss": "^8.2.8",
 		"postcss-less": "^4.0.1",
 		"postcss-safe-parser": "^5.0.2",
 		"request": "^2.88.2",
-		"terser": "^5.5.1"
+		"terser": "^5.7.0"
 	},
 	"devDependencies": {
 		"@types/async": "^3.2.5",
 		"@types/babel__core": "^7.1.12",
 		"@types/babel__preset-env": "^7.9.1",
 		"@types/clean-css": "^4.2.2",
-		"@types/glob": "^7.1.3",
 		"@types/html-minifier": "^4.0.0",
 		"@types/less": "^3.0.2",
 		"@types/mocha": "^8.0.0",
@@ -121,16 +120,10 @@
 		"@types/vscode": "^1.50.0",
 		"@typescript-eslint/eslint-plugin": "^4.14.2",
 		"@typescript-eslint/parser": "^4.14.2",
-		"eslint": "^6.8.0",
-		"eslint-config-ali": "^12.0.0",
+		"eslint-config-ali": "^12.1.0",
 		"eslint-config-egg": "^9.0.0",
 		"eslint-plugin-import": "^2.22.1",
-		"glob": "^7.1.6",
 		"mocha": "^8.1.3",
-		"ts-loader": "^8.0.12",
-		"typescript": "^3.9.7",
-		"vscode-test": "^1.4.0",
-		"webpack": "^5.10.1",
-		"webpack-cli": "^4.2.0"
+		"vscode-test": "^1.4.0"
 	}
 }

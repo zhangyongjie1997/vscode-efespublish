@@ -3,7 +3,7 @@ import { readFile } from '@utils/fsUtils';
 import { parseErrorMessage } from '@parser/shared';
 
 
-export const parse = async (src: string, mini: boolean = false): Promise<string> => {
+export const parse = async (src: string, mini = false): Promise<string> => {
   const miniHtmlConfig = {
     removeComments: true,
     collapseWhitespace: true,
@@ -17,4 +17,4 @@ export const parse = async (src: string, mini: boolean = false): Promise<string>
   }
   if (mini) resultString = minify(resultString, miniHtmlConfig);
   return resultString;
-}
+};

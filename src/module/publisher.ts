@@ -1,8 +1,9 @@
+/* eslint-disable no-empty */
 import fs from 'fs';
 import Aigle from 'aigle';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import output from '@utils/output';
+import outputer from '@utils/output';
 import { ConcatFile } from '@utils/concatFile';
 import { ImageMinier } from '@utils/imageMinify';
 import { warning, error, info, getSecond } from '@utils/utils';
@@ -54,7 +55,7 @@ class Publisher {
     cancellation.onCancellationRequested(this.handleCancel);
     this.incrementProgress(progress, 0, '正在查找配置文件。。。');
 
-    const config = await this.initConcatFileConfig()
+    const config = await this.initConcatFileConfig();
 
     if (!config?.pkg) {
       error('请检查配置文件是否正确！');
@@ -64,12 +65,12 @@ class Publisher {
 
     this.incrementProgress(progress, 0, '发现配置文件，开始打包。。。');
 
-    output.messageLine('concatFile.json文件内容：');
-    output.message(JSON.stringify(config));
+    outputer.messageLine('concatFile.json文件内容：');
+    outputer.message(JSON.stringify(config));
 
     const { pkg } = config;
     this.totalFileLength += Object.keys(pkg).length;
-    
+
     const iterator = Aigle.resolve(pkg).forEachSeries(async (inputs, output) => {
       const data = await concatFile.concatFile({
         inputs,
@@ -91,7 +92,7 @@ class Publisher {
 
     this.incrementProgress(progress, 0, '开始处理html, 图片文件。。。');
     await this.handleHtmlFiles(progress);
-    
+
     this.incrementProgress(progress, 100, '');
     info(`publish 完成，耗时${getSecond(Date.now() - this.startTime)}s!`);
     this.publishing = false;
@@ -104,13 +105,14 @@ class Publisher {
       const exits = fs.existsSync(activeFile);
 
       if (exits) {
-        const fileString = fs.readFileSync(activeFile, 'utf8'); 
+        const fileString = fs.readFileSync(activeFile, 'utf8');
         let configData: ConfigData = {};
         if (fileString) {
           try {
             configData = JSON.parse(fileString);
-            if(configData.pkg){
-              return this.concatFileConfig = configData;
+            if (configData.pkg) {
+              this.concatFileConfig = configData;
+              return configData;
             }
           } catch (e) {}
         }

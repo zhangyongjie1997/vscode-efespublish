@@ -5,10 +5,8 @@ import * as vscode from 'vscode';
 import { tranformer } from './module/transformer';
 import { Publisher } from './module/publisher';
 import { Watcher, WatcherViewProvider } from './module/watcher';
-import { useAutoprefixer } from './module/cssprefixer'
+import { useAutoprefixer } from './module/cssprefixer';
 import { info, showOutput } from '@utils/utils';
-
-let output: vscode.OutputChannel
 
 export const activate = (context: vscode.ExtensionContext) => {
   console.log('Congratulations, your extension "vscode-efespublish" is now active!');
@@ -30,19 +28,19 @@ export const activate = (context: vscode.ExtensionContext) => {
   );
 
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('efespublish.transformcss', (textEditor) => {
-		useAutoprefixer(textEditor.document, textEditor.selection).then((result) => {
-			// If we have warnings then don't update Editor
-			if (result.warnings) {
-				return;
-			}
+    useAutoprefixer(textEditor.document, textEditor.selection).then((result) => {
+      // If we have warnings then don't update Editor
+      if (result.warnings) {
+        return;
+      }
 
-			textEditor.edit((editBuilder) => {
-				editBuilder.replace(result.range, result.css);
-			});
-		}).catch((err) => {
-			showOutput(err.toString());
-		});
-	}))
+      textEditor.edit((editBuilder) => {
+        editBuilder.replace(result.range, result.css);
+      });
+    }).catch((err) => {
+      showOutput(err.toString());
+    });
+  }));
 
   // 注册textEditor可以直接获取当前编辑器
   context.subscriptions.push(vscode.commands.registerCommand('efespublish.publish', () => {
@@ -63,7 +61,6 @@ export const activate = (context: vscode.ExtensionContext) => {
     watcher.close();
   }));
 };
-
 
 
 // this method is called when your extension is deactivated

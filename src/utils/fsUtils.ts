@@ -8,7 +8,7 @@ import { rHtmlFile, rImageFile } from './fileRegExps';
 
 const CONFIG_FILE_NAME = 'concatfile.json';
 
-export type ReadFileResult = [object | Error | null, string]
+export type ReadFileResult = [object | Error | null, string];
 
 export const mkdir = async (url: string) => {
   const pathData = path.parse(url);
@@ -66,7 +66,9 @@ const find = (baseUrl: string): {
     if (fileData) {
       try {
         configData = JSON.parse(fileData);
-      } catch (e) {}
+      } catch (e) {
+        configData = {};
+      }
     }
     return { config: configData, configFilePath: filePath };
   }
@@ -117,6 +119,7 @@ export const getWorkDirByFile = (file) => {
 
     const dirInfo = fs.readdirSync(dir);
 
+    // eslint-disable-next-line no-loop-func
     const found = dirInfo.find((item) => {
       if (
         item === concatConfigFileName &&
@@ -165,12 +168,13 @@ export const findPkgByFile = async (file: string): Promise<ConcatOptions> => {
 };
 
 export const readFile = (file): Promise<ReadFileResult> => {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
+    // eslint-disable-next-line node/prefer-promises/fs
     fs.readFile(file, { encoding: 'utf8' }, async (err, fileString = '') => {
-      if(err) {
+      if (err) {
         output.errorLine(`读取文件：${file}`);
       }
       resolve([err, fileString]);
     });
   });
-}
+};

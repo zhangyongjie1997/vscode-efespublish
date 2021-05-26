@@ -9,6 +9,7 @@ import { error } from '@utils/utils';
 export const parse = async (src): Promise<string> => {
   let data = `\n/* SOURCE: ${src.split('src')[1]} */\n`;
   try {
+    // eslint-disable-next-line prefer-const
     let [err, result = ''] = await readFile(src);
     if (err) {
       result = parseErrorMessage(src);
@@ -19,10 +20,10 @@ export const parse = async (src): Promise<string> => {
     }
     data += result;
   } catch (e) {
-    error(e)
+    error(e);
   }
   return data;
-}
+};
 
 export const parseAll = async (srcs: string | string[]): Promise<string> => {
   let data = '';
@@ -40,7 +41,7 @@ export const parseAll = async (srcs: string | string[]): Promise<string> => {
       data = await parse(srcs);
     }
   } catch (e) {
-    error(e)
+    error(e);
   }
   return data;
-}
+};
